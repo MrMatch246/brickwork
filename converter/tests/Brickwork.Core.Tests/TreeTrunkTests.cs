@@ -47,7 +47,7 @@ public class TreeTrunkTests
         var map = await ImportAsync(new InkarnateImportOptions());
 
         var trunks = map.Walls.Where(wall => wall.EntityId < 0).ToList();
-        Assert.Equal(6, trunks.Count); // 3 trees x 2 arms; bush and fallen tree skipped
+        Assert.Equal(8, trunks.Count); // 4 trees x 2 arms; bush and fallen tree skipped
         Assert.All(trunks, wall => Assert.Equal(WallLineType.Solid, wall.LineType));
         Assert.All(trunks, wall => Assert.Equal(2, wall.Points.Count));
 
@@ -58,10 +58,21 @@ public class TreeTrunkTests
 
         var palmGroup = Assert.Single(map.Groups, group => group.Name == "Palm Tree trunks");
         Assert.Equal("layer-trees", palmGroup.LayerId);
-        Assert.Equal(4, palmGroup.MemberIds.Count);
+        Assert.Equal(6, palmGroup.MemberIds.Count);
+
+        // Palm scales are 1, 2 and 1: the median (1) gets the configured size, the large palm twice that.
+        Assert.All(trunks.Where(wall => wall.EntityId is -22 or -23), wall => Assert.Equal(50, Length(wall), precision: 6));
 
         // A tree on a hidden layer gets inactive trunk walls.
         Assert.All(trunks.Where(wall => wall.LayerId == "layer-hidden"), wall => Assert.False(wall.IsActive));
+    }
+
+    [Fact]
+    public async Task Import_ScalingDisabled_GivesEveryTrunkTheSameSize()
+    {
+        var map = await ImportAsync(new InkarnateImportOptions { ScaleTreeTrunksWithStamp = false });
+
+        Assert.All(map.Walls.Where(wall => wall.EntityId < 0), wall => Assert.Equal(25, Length(wall), precision: 6));
     }
 
     [Fact]
@@ -81,7 +92,7 @@ public class TreeTrunkTests
 
         var withTrees = await ImportAsync(new InkarnateImportOptions());
         MapReimportMerger.Merge(map, withTrees, wallsAndRegions: true, lights: false);
-        Assert.Equal(6, map.Walls.Count(wall => wall.EntityId < 0));
+        Assert.Equal(8, map.Walls.Count(wall => wall.EntityId < 0));
         Assert.Equal(2, map.Groups.Count);
 
         map.Walls.Single(wall => wall.EntityId == -20).IsActive = false;
@@ -115,11 +126,12 @@ public class TreeTrunkTests
                   "layerData": { "name": "Hidden", "isVisible": false } },
                 { "transactionId": 3, "cmdType": "cmd-entity-add", "items": [
                   { "layerId": "layer-grid", "entity": { "entityType": "grid", "entityId": 1, "style": { "size": 50 } } },
-                  { "layerId": "layer-trees", "entity": { "entityType": "stamp", "entityId": 10, "defaultName": "Palm Tree", "x": 200, "y": 300 } },
-                  { "layerId": "layer-trees", "entity": { "entityType": "stamp", "entityId": 11, "defaultName": "Palm Tree", "x": 400, "y": 300, "angle": 30 } },
+                  { "layerId": "layer-trees", "entity": { "entityType": "stamp", "entityId": 10, "defaultName": "Palm Tree", "x": 200, "y": 300, "scale": 1 } },
+                  { "layerId": "layer-trees", "entity": { "entityType": "stamp", "entityId": 11, "defaultName": "Palm Tree", "x": 400, "y": 300, "angle": 30, "scale": 2 } },
                   { "layerId": "layer-trees", "entity": { "entityType": "stamp", "entityId": 12, "defaultName": "Berry Bush", "x": 1, "y": 1 } },
                   { "layerId": "layer-trees", "entity": { "entityType": "stamp", "entityId": 13, "defaultName": "Fallen Tree", "x": 2, "y": 2 } },
-                  { "layerId": "layer-hidden", "entity": { "entityType": "stamp", "entityId": 14, "defaultName": "Oak", "x": 3, "y": 3 } }
+                  { "layerId": "layer-hidden", "entity": { "entityType": "stamp", "entityId": 14, "defaultName": "Oak", "x": 3, "y": 3 } },
+                  { "layerId": "layer-trees", "entity": { "entityType": "stamp", "entityId": 15, "defaultName": "Palm Tree", "x": 600, "y": 300, "scale": 1 } }
                 ] }
               ]
             }

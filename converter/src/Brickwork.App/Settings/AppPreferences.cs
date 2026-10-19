@@ -37,7 +37,8 @@ public sealed class AppPreferences
                 or nameof(EditorSession.DetectTreesFromStamps)
                 or nameof(EditorSession.TreeKeywords)
                 or nameof(EditorSession.TreeExcludeKeywords)
-                or nameof(EditorSession.TreeTrunkSize))
+                or nameof(EditorSession.TreeTrunkSize)
+                or nameof(EditorSession.ScaleTreeTrunksWithStamp))
             {
                 Save();
             }
@@ -67,6 +68,7 @@ public sealed class AppPreferences
             _session.TreeKeywords = settings.TreeKeywords ?? string.Empty;
             _session.TreeExcludeKeywords = settings.TreeExcludeKeywords ?? string.Empty;
             _session.TreeTrunkSize = settings.TreeTrunkSize;
+            _session.ScaleTreeTrunksWithStamp = settings.ScaleTreeTrunksWithStamp;
         }
         finally
         {
@@ -96,6 +98,7 @@ public sealed class AppPreferences
             TreeKeywords = _session.TreeKeywords,
             TreeExcludeKeywords = _session.TreeExcludeKeywords,
             TreeTrunkSize = _session.TreeTrunkSize,
+            ScaleTreeTrunksWithStamp = _session.ScaleTreeTrunksWithStamp,
             SkippedUpdateVersion = existing.SkippedUpdateVersion,
         });
     }

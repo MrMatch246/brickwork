@@ -24,4 +24,7 @@ internal sealed class InkStamp
 
     /// <summary>Rotation in degrees (Inkarnate <c>angle</c>).</summary>
     public double Angle { get; set; }
+
+    /// <summary>Stamp scale (Inkarnate <c>scale</c>); 1 when missing.</summary>
+    public double Scale { get; set; } = 1;
 }

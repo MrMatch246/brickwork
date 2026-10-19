@@ -159,6 +159,9 @@
                                        Value="{Binding TreeTrunkSize}" Width="110" />
                         <Button Content="Reset words" Command="{Binding ResetTreeKeywordsCommand}" />
                     </StackPanel>
+                    <CheckBox Content="Scale trunks with tree size (a typical tree of each kind gets the size above)"
+                              IsChecked="{Binding ScaleTreeTrunksWithStamp}"
+                              IsEnabled="{Binding DetectTreesFromStamps}" />
 
                     <Border BorderBrush="#4A5364"
                             BorderThickness="1"

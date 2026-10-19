@@ -40,6 +40,12 @@ public sealed class InkarnateImportOptions
     /// <summary>Length of each trunk wall, in grid squares.</summary>
     public double TreeTrunkSize { get; set; } = TreeTrunks.DefaultSize;
 
+    /// <summary>
+    /// Scale each trunk with its stamp, relative to the median scale of that tree kind: a typical
+    /// tree gets <see cref="TreeTrunkSize"/>, one stamped twice as large gets twice the trunk.
+    /// </summary>
+    public bool ScaleTreeTrunksWithStamp { get; set; } = true;
+
     public bool AnyRegionDetectionEnabled =>
         DetectRegionsFromColorPaths ||
         DetectRegionsFromNamedContainers ||

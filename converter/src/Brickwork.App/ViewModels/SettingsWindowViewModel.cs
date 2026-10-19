@@ -75,7 +75,8 @@ public partial class SettingsWindowViewModel : ObservableObject
                 or nameof(EditorSession.DetectTreesFromStamps)
                 or nameof(EditorSession.TreeKeywords)
                 or nameof(EditorSession.TreeExcludeKeywords)
-                or nameof(EditorSession.TreeTrunkSize))
+                or nameof(EditorSession.TreeTrunkSize)
+                or nameof(EditorSession.ScaleTreeTrunksWithStamp))
             {
                 OnPropertyChanged(args.PropertyName);
             }
@@ -185,6 +186,12 @@ public partial class SettingsWindowViewModel : ObservableObject
     {
         get => _session.TreeTrunkSize;
         set => _session.TreeTrunkSize = value;
+    }
+
+    public bool ScaleTreeTrunksWithStamp
+    {
+        get => _session.ScaleTreeTrunksWithStamp;
+        set => _session.ScaleTreeTrunksWithStamp = value;
     }
 
     [RelayCommand]

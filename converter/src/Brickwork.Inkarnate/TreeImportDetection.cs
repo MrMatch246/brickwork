@@ -33,6 +33,7 @@ internal static class TreeImportDetection
         for (var kindIndex = 0; kindIndex < kinds.Count; kindIndex++)
         {
             var kind = kinds[kindIndex];
+            var typicalScale = Median(kind.Select(stamp => stamp.Scale));
             var group = new EntityGroup
             {
                 GroupId = TreeTrunks.GroupId(kindIndex),
@@ -44,7 +45,8 @@ internal static class TreeImportDetection
             {
                 var isActive = stamp.IsEntityVisible &&
                                (stamp.LayerId is null || !hiddenLayers.Contains(stamp.LayerId));
-                var arms = TreeTrunks.BuildX(stamp.Position, armLength, stamp.Angle);
+                var length = options.ScaleTreeTrunksWithStamp ? armLength * stamp.Scale / typicalScale : armLength;
+                var arms = TreeTrunks.BuildX(stamp.Position, length, stamp.Angle);
                 for (var arm = 0; arm < arms.Count; arm++)
                 {
                     var wall = new Wall
@@ -70,6 +72,14 @@ internal static class TreeImportDetection
         }
 
         return added;
+    }
+
+    private static double Median(IEnumerable<double> values)
+    {
+        var sorted = values.Order().ToList();
+        var middle = sorted.Count / 2;
+        var median = sorted.Count % 2 == 1 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2d;
+        return median > 0 ? median : 1;
     }
 
     private static string KindName(InkStamp stamp) =>

@@ -53,6 +53,9 @@ public sealed class AppSettings
     /// <summary>Length of each trunk wall, in grid squares.</summary>
     public double TreeTrunkSize { get; set; } = TreeTrunks.DefaultSize;
 
+    /// <summary>Scale trunks with their stamp, relative to the typical size of that tree kind.</summary>
+    public bool ScaleTreeTrunksWithStamp { get; set; } = true;
+
     /// <summary>
     /// Highest release version the user chose to skip (e.g. 1.2.0).
     /// Versions at or below this are not offered again by the startup notifier.

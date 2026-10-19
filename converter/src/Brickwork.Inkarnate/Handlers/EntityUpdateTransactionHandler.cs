@@ -184,6 +184,10 @@ internal sealed class EntityUpdateTransactionHandler : IInkTransactionHandler
                     y = property.Value.GetDouble();
                     appliedKnownField = true;
                     break;
+                case "scale" when property.Value.ValueKind == JsonValueKind.Number && property.Value.GetDouble() > 0:
+                    stamp.Scale = property.Value.GetDouble();
+                    appliedKnownField = true;
+                    break;
                 case "angle" when property.Value.ValueKind == JsonValueKind.Number:
                     stamp.Angle = property.Value.GetDouble();
                     appliedKnownField = true;

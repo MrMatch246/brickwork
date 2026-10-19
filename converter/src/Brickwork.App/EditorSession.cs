@@ -111,6 +111,9 @@ public sealed partial class EditorSession : ObservableObject
     private double _treeTrunkSize = TreeTrunks.DefaultSize;
 
     [ObservableProperty]
+    private bool _scaleTreeTrunksWithStamp = true;
+
+    [ObservableProperty]
     private MapToolKind _activeMapTool = MapToolKind.WallEditing;
 
     [ObservableProperty]
@@ -155,6 +158,7 @@ public sealed partial class EditorSession : ObservableObject
             TreeKeywords = TreeKeywords,
             TreeExcludeKeywords = TreeExcludeKeywords,
             TreeTrunkSize = TreeTrunkSize,
+            ScaleTreeTrunksWithStamp = ScaleTreeTrunksWithStamp,
         };
 
     public void NotifyContentChanged()
