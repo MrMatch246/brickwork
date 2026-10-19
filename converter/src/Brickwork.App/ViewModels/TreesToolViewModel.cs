@@ -3,6 +3,8 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
+using Dock.Model.Core;
 using Dock.Model.Mvvm.Controls;
 using Brickwork.App.Rendering;
 using Brickwork.Core.Models;
@@ -34,6 +36,11 @@ public partial class TreesToolViewModel : Tool
             if (args.PropertyName is nameof(EditorSession.ContentRevision) && !_session.IsGestureActive)
             {
                 Sync();
+            }
+
+            if (args.PropertyName is nameof(EditorSession.TreeFocusGeneration))
+            {
+                SelectVersionOfFocusedTrunk();
             }
 
             if (args.PropertyName is nameof(EditorSession.FocusedWallEntityId) &&
@@ -83,6 +90,52 @@ public partial class TreesToolViewModel : Tool
     }
 
     internal void NotifySummaryChanged() => OnPropertyChanged(nameof(Summary));
+
+    private bool IsShownTab => Owner is IDock dock && ReferenceEquals(dock.ActiveDockable, this);
+
+    /// <summary>
+    /// While this tab is shown, a trunk clicked on the map selects its tree version here (the kind
+    /// when it has only one version), ready for scale and offset. On the map only the clicked tree's
+    /// X stays selected, so a drag moves that tree and not the whole version.
+    /// </summary>
+    private void SelectVersionOfFocusedTrunk()
+    {
+        if (!IsShownTab ||
+            _session.FocusedWallEntityId is not int wallId ||
+            _session.Map?.Walls.FirstOrDefault(wall => wall.EntityId == wallId) is not { Trunk: not null } focused)
+        {
+            return;
+        }
+
+        foreach (var kind in Kinds)
+        {
+            var version = kind.Versions.FirstOrDefault(candidate => candidate.Walls.Contains(focused));
+            if (version is null)
+            {
+                continue;
+            }
+
+            kind.IsExpanded = true;
+            var tree = version.Trees.FirstOrDefault(candidate => candidate.Walls.Contains(focused));
+            object target = kind.Versions.Count == 1 ? kind : version;
+
+            // Select after the expanded rows exist; don't let the selection grab the whole version.
+            Dispatcher.UIThread.Post(() =>
+            {
+                _syncingSelection = true;
+                SelectedTreeItem = target;
+                _syncingSelection = false;
+            });
+
+            // Safe during a drag too: the walls being dragged were fixed when it started.
+            if (tree is not null)
+            {
+                _session.SetSelection(tree.Walls.Select(wall => wall.EntityId), focused.EntityId);
+            }
+
+            return;
+        }
+    }
 
     private void Rebuild()
     {

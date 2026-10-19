@@ -508,6 +508,14 @@ public partial class MapPreviewDocumentViewModel : Document
         _movingWalls = moveWallSelection
             ? Map.Walls.Where(wall => wallIds.Contains(wall.EntityId)).ToList()
             : [wallHit.Wall];
+
+        // A tree trunk X moves as a whole, never one arm at a time.
+        _movingWalls = _movingWalls
+            .Concat(Map.Walls.Where(wall =>
+                wall.Trunk is { } trunk &&
+                _movingWalls.Any(moving => moving.Trunk?.StampId == trunk.StampId)))
+            .Distinct()
+            .ToList();
         _movingRegions = null;
         _entityMoveLastScenePoint = transform.PreviewToScene(previewPoint);
         _entityMoveGesture = _session.BeginGesture(
