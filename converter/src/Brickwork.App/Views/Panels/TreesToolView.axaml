@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Brickwork.App.ViewModels"
+             x:Class="Brickwork.App.Views.Panels.TreesToolView"
+             x:DataType="vm:TreesToolViewModel"
+             Classes="tool-panel"
+             Focusable="True">
+    <UserControl.Styles>
+        <Style Selector="TreeViewItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+        </Style>
+        <Style Selector="TreeViewItem CheckBox">
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+    </UserControl.Styles>
+    <ScrollViewer Classes="tool-panel-scroll">
+        <Grid Margin="12">
+            <TextBlock Text="{Binding EmptyMessage}"
+                       Opacity="0.6"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding ShowEmptyMessage}" />
+
+            <StackPanel Spacing="8" IsVisible="{Binding HasTrees}">
+                <TextBlock Text="{Binding Summary}"
+                           Opacity="0.75"
+                           TextWrapping="Wrap" />
+
+                <TreeView ItemsSource="{Binding Kinds}"
+                          SelectedItem="{Binding SelectedTreeItem, Mode=TwoWay}">
+                    <TreeView.Styles>
+                        <Style Selector="TreeViewItem" x:DataType="vm:TreeKindViewModel">
+                            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                        </Style>
+                    </TreeView.Styles>
+                    <TreeView.DataTemplates>
+                        <TreeDataTemplate DataType="vm:TreeKindViewModel"
+                                          ItemsSource="{Binding Children}">
+                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
+                                <CheckBox IsChecked="{Binding IsActive}"
+                                          IsThreeState="False"
+                                          VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Header}"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </TreeDataTemplate>
+
+                        <DataTemplate DataType="vm:TreeItemViewModel">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <CheckBox IsChecked="{Binding IsActive}"
+                                          VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding DisplayName}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding PositionText}"
+                                           Opacity="0.55"
+                                           FontSize="12"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </TreeView.DataTemplates>
+                </TreeView>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

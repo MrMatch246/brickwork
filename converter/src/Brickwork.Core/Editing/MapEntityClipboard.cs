@@ -135,6 +135,7 @@ public sealed class MapEntityClipboard
             Portals = wall.Portals.Select(ClonePortal).ToList(),
             Offset = wall.Offset,
             OffsetBasePoints = wall.OffsetBasePoints.ToList(),
+            TreeStampId = wall.TreeStampId,
         };
 
     private static Region CloneRegion(Region region, int? entityId = null) =>

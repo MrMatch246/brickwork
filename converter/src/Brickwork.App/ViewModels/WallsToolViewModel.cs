@@ -45,6 +45,10 @@ public partial class WallsToolViewModel : Tool
 
     public bool HasLayers => Layers.Count > 0;
 
+    /// <summary>Walls listed in this panel; tree trunk walls have their own Trees panel.</summary>
+    private IEnumerable<Wall> PanelWalls =>
+        _session.Map?.Walls.Where(wall => !TreeTrunks.IsTrunk(wall)) ?? [];
+
     public bool ShowEmptyMessage => !HasLayers;
 
     public string EmptyMessage => _session.Map is null
@@ -255,7 +259,7 @@ public partial class WallsToolViewModel : Tool
         }
 
         var selected = _session.SelectedWallEntityIds;
-        return _session.Map.Walls
+        return PanelWalls
             .Where(wall => wall.Points.Count >= 2 && (selected.Count == 0 || selected.Contains(wall.EntityId)))
             .ToList();
     }
@@ -397,7 +401,7 @@ public partial class WallsToolViewModel : Tool
             case WallLayerNodeViewModel layerItem:
                 {
                     var layerId = layerItem.LayerId;
-                    var walls = _session.Map.Walls
+                    var walls = PanelWalls
                         .Where(wall =>
                             string.Equals(
                                 wall.LayerId ?? "(no layer)",
@@ -1016,7 +1020,7 @@ public partial class WallsToolViewModel : Tool
             return;
         }
 
-        var mapWallIds = _session.Map.Walls.Select(wall => wall.EntityId).ToHashSet();
+        var mapWallIds = PanelWalls.Select(wall => wall.EntityId).ToHashSet();
         var treeWallIds = EnumerateTreeWallIds().ToHashSet();
         if (mapWallIds.SetEquals(treeWallIds))
         {
@@ -1044,7 +1048,7 @@ public partial class WallsToolViewModel : Tool
         // Additions only: insert matching nodes instead of rebuilding.
         if (treeWallIds.IsSubsetOf(mapWallIds))
         {
-            foreach (var wall in _session.Map.Walls.OrderBy(candidate => candidate.EntityId))
+            foreach (var wall in PanelWalls.OrderBy(candidate => candidate.EntityId))
             {
                 if (!treeWallIds.Contains(wall.EntityId))
                 {
@@ -1379,11 +1383,11 @@ public partial class WallsToolViewModel : Tool
         }
 
         var groupsById = _session.Map.Groups.ToDictionary(group => group.GroupId);
-        var wallsById = _session.Map.Walls.ToDictionary(wall => wall.EntityId);
+        var wallsById = PanelWalls.ToDictionary(wall => wall.EntityId);
         var layersById = _session.Map.Layers.ToDictionary(
             layer => layer.Id,
             StringComparer.OrdinalIgnoreCase);
-        var wallsByLayer = _session.Map.Walls
+        var wallsByLayer = PanelWalls
             .GroupBy(wall => wall.LayerId ?? "(no layer)")
             .ToDictionary(group => group.Key, group => group.ToList(), StringComparer.OrdinalIgnoreCase);
 

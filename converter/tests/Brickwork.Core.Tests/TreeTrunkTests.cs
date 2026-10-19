@@ -50,6 +50,12 @@ public class TreeTrunkTests
         Assert.Equal(8, trunks.Count); // 4 trees x 2 arms; bush and fallen tree skipped
         Assert.All(trunks, wall => Assert.Equal(WallLineType.Solid, wall.LineType));
         Assert.All(trunks, wall => Assert.Equal(2, wall.Points.Count));
+        Assert.All(trunks, wall => Assert.True(TreeTrunks.IsTrunk(wall)));
+        Assert.Equal(10, map.Walls.Single(wall => wall.EntityId == -20).TreeStampId);
+
+        var restored = new MapDocument();
+        DocumentContentMemento.Capture(map).RestoreTo(restored);
+        Assert.Equal(10, restored.Walls.Single(wall => wall.EntityId == -20).TreeStampId);
 
         var palm = trunks.Where(wall => wall.EntityId is -20 or -21).ToList();
         Assert.Equal(2, palm.Count);

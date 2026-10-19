@@ -24,6 +24,8 @@ public static class TreeTrunks
     /// <summary>Negative group id for the trunks of one tree kind on one layer.</summary>
     public static int GroupId(int kindIndex) => -(1_500_000_000 + kindIndex);
 
+    public static bool IsTrunk(Wall wall) => wall.TreeStampId is not null;
+
     /// <summary>The two crossing walls (as point pairs) of an X centred on <paramref name="center"/>.</summary>
     public static IReadOnlyList<(MapPoint Start, MapPoint End)> BuildX(
         MapPoint center,

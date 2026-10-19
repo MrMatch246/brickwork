@@ -307,6 +307,7 @@ public sealed class DocumentContentMemento
         SyncPortals(source.Portals, target.Portals);
         target.Offset = source.Offset;
         ReplacePoints(target.OffsetBasePoints, source.OffsetBasePoints);
+        target.TreeStampId = source.TreeStampId;
     }
 
     private static void CopyRegionInto(Region source, Region target)
@@ -421,6 +422,7 @@ public sealed class DocumentContentMemento
             Portals = wall.Portals.Select(ClonePortal).ToList(),
             Offset = wall.Offset,
             OffsetBasePoints = wall.OffsetBasePoints.ToList(),
+            TreeStampId = wall.TreeStampId,
         };
 
     private static Region CloneRegion(Region region) =>
@@ -494,7 +496,8 @@ public sealed class DocumentContentMemento
         a.Points.SequenceEqual(b.Points) &&
         PortalListsEqual(a.Portals, b.Portals) &&
         a.Offset.Equals(b.Offset) &&
-        a.OffsetBasePoints.SequenceEqual(b.OffsetBasePoints);
+        a.OffsetBasePoints.SequenceEqual(b.OffsetBasePoints) &&
+        a.TreeStampId == b.TreeStampId;
 
     private static bool RegionEquals(Region a, Region b) =>
         a.EntityId == b.EntityId &&

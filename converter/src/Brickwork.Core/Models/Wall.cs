@@ -49,6 +49,9 @@ public sealed class Wall
     /// <summary>Points before <see cref="Offset"/> was applied; empty when the wall is not offset.</summary>
     public IList<MapPoint> OffsetBasePoints { get; init; } = [];
 
+    /// <summary>Set on the two walls of a tree trunk X: the entity id of the tree stamp.</summary>
+    public int? TreeStampId { get; set; }
+
     public string DisplayName => string.IsNullOrWhiteSpace(Name) ? "Wall" : Name;
 
     public double SceneThickness => WallThickness * Scale;

@@ -55,6 +55,7 @@ internal static class TreeImportDetection
                         Name = kind.Key.Kind,
                         LayerId = stamp.LayerId,
                         GroupId = group.GroupId,
+                        TreeStampId = stamp.EntityId,
                         LineType = WallLineType.Solid,
                         WallEnabled = true,
                         IsActive = isActive,
