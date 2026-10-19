@@ -41,10 +41,10 @@ public sealed class InkarnateImportOptions
     public double TreeTrunkSize { get; set; } = TreeTrunks.DefaultSize;
 
     /// <summary>
-    /// Scale each trunk with its stamp, relative to the median scale of that tree kind: a typical
-    /// tree gets <see cref="TreeTrunkSize"/>, one stamped twice as large gets twice the trunk.
+    /// How much of a tree's size (relative to the median of its kind) its trunk follows, in percent;
+    /// see <see cref="TreeTrunks.SizeFactor"/>. A typical tree always gets <see cref="TreeTrunkSize"/>.
     /// </summary>
-    public bool ScaleTreeTrunksWithStamp { get; set; } = true;
+    public double TreeTrunkGrowthPercent { get; set; } = TreeTrunks.DefaultGrowthPercent;
 
     /// <summary>Per-version scale and offset from the tree-trunk library, keyed by <see cref="TreeTrunks.VersionKey(int?, string?)"/>.</summary>
     public IReadOnlyDictionary<string, TreeTrunkAdjustment> TreeAdjustments { get; set; } =

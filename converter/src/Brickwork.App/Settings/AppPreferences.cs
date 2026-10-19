@@ -42,7 +42,7 @@ public sealed class AppPreferences
                 or nameof(EditorSession.TreeKeywords)
                 or nameof(EditorSession.TreeExcludeKeywords)
                 or nameof(EditorSession.TreeTrunkSize)
-                or nameof(EditorSession.ScaleTreeTrunksWithStamp))
+                or nameof(EditorSession.TreeTrunkGrowthPercent))
             {
                 Save();
             }
@@ -72,7 +72,7 @@ public sealed class AppPreferences
             _session.TreeKeywords = settings.TreeKeywords ?? string.Empty;
             _session.TreeExcludeKeywords = settings.TreeExcludeKeywords ?? string.Empty;
             _session.TreeTrunkSize = settings.TreeTrunkSize;
-            _session.ScaleTreeTrunksWithStamp = settings.ScaleTreeTrunksWithStamp;
+            _session.TreeTrunkGrowthPercent = settings.TreeTrunkGrowthPercent;
         }
         finally
         {
@@ -102,7 +102,7 @@ public sealed class AppPreferences
             TreeKeywords = _session.TreeKeywords,
             TreeExcludeKeywords = _session.TreeExcludeKeywords,
             TreeTrunkSize = _session.TreeTrunkSize,
-            ScaleTreeTrunksWithStamp = _session.ScaleTreeTrunksWithStamp,
+            TreeTrunkGrowthPercent = _session.TreeTrunkGrowthPercent,
             SkippedUpdateVersion = existing.SkippedUpdateVersion,
         });
     }

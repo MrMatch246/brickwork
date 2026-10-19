@@ -76,7 +76,7 @@ public partial class SettingsWindowViewModel : ObservableObject
                 or nameof(EditorSession.TreeKeywords)
                 or nameof(EditorSession.TreeExcludeKeywords)
                 or nameof(EditorSession.TreeTrunkSize)
-                or nameof(EditorSession.ScaleTreeTrunksWithStamp))
+                or nameof(EditorSession.TreeTrunkGrowthPercent))
             {
                 OnPropertyChanged(args.PropertyName);
             }
@@ -188,10 +188,10 @@ public partial class SettingsWindowViewModel : ObservableObject
         set => _session.TreeTrunkSize = value;
     }
 
-    public bool ScaleTreeTrunksWithStamp
+    public double TreeTrunkGrowthPercent
     {
-        get => _session.ScaleTreeTrunksWithStamp;
-        set => _session.ScaleTreeTrunksWithStamp = value;
+        get => _session.TreeTrunkGrowthPercent;
+        set => _session.TreeTrunkGrowthPercent = value;
     }
 
     [RelayCommand]

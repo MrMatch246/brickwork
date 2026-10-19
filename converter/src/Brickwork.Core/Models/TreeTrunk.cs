@@ -10,7 +10,8 @@ namespace Brickwork.Core.Models;
 /// <param name="Arm">0 or 1: which of the two crossing walls this is.</param>
 /// <param name="StampCenter">Scene-space centre of the stamp.</param>
 /// <param name="Angle">Stamp rotation in degrees.</param>
-/// <param name="Unit">Scene length of one grid square at this tree's size (cell size times the stamp's size ratio).</param>
+/// <param name="Unit">Scene length of one grid square in the tree image's frame (cell size times the stamp's size ratio); used for offsets.</param>
+/// <param name="SizeUnit">Scene length of one grid square of trunk size (cell size times the damped size ratio; see <see cref="TreeTrunks.SizeFactor"/>).</param>
 /// <param name="BaseSize">Trunk size from the import settings, in grid squares.</param>
 public sealed record TreeTrunk(
     int StampId,
@@ -19,6 +20,7 @@ public sealed record TreeTrunk(
     MapPoint StampCenter,
     double Angle,
     double Unit,
+    double SizeUnit,
     double BaseSize)
 {
     /// <summary>Version scale factor (1 = <see cref="BaseSize"/>).</summary>

@@ -44,8 +44,9 @@ internal static class TreeImportDetection
             {
                 var isActive = stamp.IsEntityVisible &&
                                (stamp.LayerId is null || !hiddenLayers.Contains(stamp.LayerId));
-                var unit = map.Grid.CellSize *
-                           (options.ScaleTreeTrunksWithStamp ? stamp.Scale / typicalScale : 1);
+                var sizeRatio = stamp.Scale / typicalScale;
+                var unit = map.Grid.CellSize * sizeRatio;
+                var sizeUnit = map.Grid.CellSize * TreeTrunks.SizeFactor(sizeRatio, options.TreeTrunkGrowthPercent);
                 options.TreeAdjustments.TryGetValue(
                     TreeTrunks.VersionKey(stamp.AssetId, kind.Key.Kind),
                     out var adjustment);
@@ -58,6 +59,7 @@ internal static class TreeImportDetection
                         stamp.Position,
                         stamp.Angle,
                         unit,
+                        sizeUnit,
                         options.TreeTrunkSize)
                     {
                         Scale = adjustment?.Scale ?? 1,

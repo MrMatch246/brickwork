@@ -26,6 +26,17 @@ public static class TreeTrunks
     /// <summary>Negative group id for the trunks of one tree kind on one layer.</summary>
     public static int GroupId(int kindIndex) => -(1_500_000_000 + kindIndex);
 
+    /// <summary>Default share of a tree's growth that its trunk follows, in percent.</summary>
+    public const double DefaultGrowthPercent = 50;
+
+    /// <summary>
+    /// Trunk size factor for a tree <paramref name="sizeRatio"/> times its kind's typical size: the
+    /// trunk grows by <paramref name="growthPercent"/> of the tree's growth, so at 50 % a tree twice
+    /// as large gets a 1.5x trunk and a half-size tree a 0.75x trunk; 0 % keeps every trunk the same.
+    /// </summary>
+    public static double SizeFactor(double sizeRatio, double growthPercent) =>
+        Math.Max(0.1, 1 + (sizeRatio - 1) * growthPercent / 100d);
+
     public static bool IsTrunk(Wall wall) => wall.Trunk is not null;
 
     /// <summary>
@@ -46,7 +57,7 @@ public static class TreeTrunks
             trunk.StampCenter.X + trunk.OffsetX * trunk.Unit,
             trunk.StampCenter.Y + trunk.OffsetY * trunk.Unit);
         var center = MapPointTransforms.RotateAround(shifted, trunk.StampCenter, trunk.Angle);
-        return BuildX(center, trunk.BaseSize * trunk.Scale * trunk.Unit, trunk.Angle)[trunk.Arm];
+        return BuildX(center, trunk.BaseSize * trunk.Scale * trunk.SizeUnit, trunk.Angle)[trunk.Arm];
     }
 
     /// <summary>Applies a version adjustment to a trunk wall and rebuilds its points.</summary>

@@ -111,7 +111,7 @@ public sealed partial class EditorSession : ObservableObject
     private double _treeTrunkSize = TreeTrunks.DefaultSize;
 
     [ObservableProperty]
-    private bool _scaleTreeTrunksWithStamp = true;
+    private double _treeTrunkGrowthPercent = TreeTrunks.DefaultGrowthPercent;
 
     private readonly Dictionary<string, TreeTrunkAdjustment> _treeAdjustments = [];
 
@@ -181,7 +181,7 @@ public sealed partial class EditorSession : ObservableObject
             TreeKeywords = TreeKeywords,
             TreeExcludeKeywords = TreeExcludeKeywords,
             TreeTrunkSize = TreeTrunkSize,
-            ScaleTreeTrunksWithStamp = ScaleTreeTrunksWithStamp,
+            TreeTrunkGrowthPercent = TreeTrunkGrowthPercent,
             TreeAdjustments = new Dictionary<string, TreeTrunkAdjustment>(_treeAdjustments),
         };
 

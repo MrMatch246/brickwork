@@ -66,8 +66,9 @@ public class TreeTrunkTests
         Assert.Equal("layer-trees", palmGroup.LayerId);
         Assert.Equal(6, palmGroup.MemberIds.Count);
 
-        // Palm scales are 1, 2 and 1: the median (1) gets the configured size, the large palm twice that.
-        Assert.All(trunks.Where(wall => wall.EntityId is -22 or -23), wall => Assert.Equal(50, Length(wall), precision: 6));
+        // Palm scales are 1, 2 and 1: the median (1) gets the configured size; the palm twice as large
+        // gets a 1.5x trunk at the default 50 % growth.
+        Assert.All(trunks.Where(wall => wall.EntityId is -22 or -23), wall => Assert.Equal(37.5, Length(wall), precision: 6));
 
         // A tree on a hidden layer gets inactive trunk walls.
         Assert.All(trunks.Where(wall => wall.LayerId == "layer-hidden"), wall => Assert.False(wall.IsActive));
@@ -82,10 +83,40 @@ public class TreeTrunkTests
         Assert.Equal(502, map.Walls.Single(wall => wall.EntityId == -22).Trunk!.AssetId);
     }
 
+    [Theory]
+    [InlineData(2, 50, 1.5)]
+    [InlineData(0.5, 50, 0.75)]
+    [InlineData(2, 0, 1)]
+    [InlineData(2, 100, 2)]
+    [InlineData(1, 50, 1)]
+    public void SizeFactor_FollowsShareOfTreeGrowth(double sizeRatio, double growthPercent, double expected)
+    {
+        Assert.Equal(expected, TreeTrunks.SizeFactor(sizeRatio, growthPercent), precision: 9);
+    }
+
+    [Fact]
+    public async Task Import_GrowthOnlyDampsSize_OffsetsFollowFullTreeSize()
+    {
+        var adjustments = new Dictionary<string, TreeTrunkAdjustment>
+        {
+            [TreeTrunks.VersionKey(502, "Palm Tree")] = new() { OffsetY = 0.5 },
+        };
+
+        var map = await ImportAsync(new InkarnateImportOptions { TreeAdjustments = adjustments });
+
+        // The 2x palm (stamp 11, rotated 30 degrees): offset 0.5 squares of 2 x 50, turned with the stamp.
+        var arm = map.Walls.Single(wall => wall.EntityId == -22);
+        var expected = Brickwork.Core.Geometry.MapPointTransforms.RotateAround(
+            new MapPoint(400, 350), new MapPoint(400, 300), 30);
+        Assert.Equal(Math.Round(expected.X, 6), Middle(arm).X);
+        Assert.Equal(Math.Round(expected.Y, 6), Middle(arm).Y);
+        Assert.Equal(37.5, Length(arm), precision: 6);
+    }
+
     [Fact]
     public void Adjust_ScalesAndOffsetsInTheStampsRotatedFrame()
     {
-        var trunk = new TreeTrunk(1, 7, 0, new MapPoint(100, 100), Angle: 90, Unit: 10, BaseSize: 2);
+        var trunk = new TreeTrunk(1, 7, 0, new MapPoint(100, 100), Angle: 90, Unit: 10, SizeUnit: 10, BaseSize: 2);
         var wall = new Wall { Trunk = trunk, Points = [] };
 
         TreeTrunks.Adjust(wall, scale: 1.5, offsetX: 1, offsetY: 0);
@@ -165,7 +196,7 @@ public class TreeTrunkTests
     [Fact]
     public async Task Import_ScalingDisabled_GivesEveryTrunkTheSameSize()
     {
-        var map = await ImportAsync(new InkarnateImportOptions { ScaleTreeTrunksWithStamp = false });
+        var map = await ImportAsync(new InkarnateImportOptions { TreeTrunkGrowthPercent = 0 });
 
         Assert.All(map.Walls.Where(wall => wall.EntityId < 0), wall => Assert.Equal(25, Length(wall), precision: 6));
     }
