@@ -85,6 +85,59 @@ public class WallOffsetTests
         Assert.Equal(new MapPoint(50, 20), anchor, new PointComparer());
     }
 
+    [Fact]
+    public void Apply_IsAbsolute_NotCumulative()
+    {
+        var wall = new Wall { Points = [new(0, 0), new(100, 0)] };
+
+        WallOffset.Apply(wall, 10);
+        WallOffset.Apply(wall, 5);
+
+        Assert.Equal(5, wall.Offset);
+        Assert.Equal(new MapPoint(0, 5), wall.Points[0], new PointComparer());
+    }
+
+    [Fact]
+    public void Apply_Zero_RestoresOriginalPath()
+    {
+        var original = new List<MapPoint> { new(0, 0), new(100, 0), new(100, 100), new(0, 100) };
+        var wall = new Wall { IsClosed = true, Points = original.ToList() };
+
+        WallOffset.Apply(wall, 25);
+        WallOffset.Apply(wall, -7);
+        WallOffset.Apply(wall, 0);
+
+        Assert.Equal(original, wall.Points);
+        Assert.Equal(0, wall.Offset);
+        Assert.Empty(wall.OffsetBasePoints);
+    }
+
+    [Fact]
+    public void Apply_AfterTranslate_KeepsOffsetRelativeToMovedPath()
+    {
+        var wall = new Wall { Points = [new(0, 0), new(100, 0)] };
+
+        WallOffset.Apply(wall, 10);
+        WallGeometryEditing.Translate(wall, 0, 50);
+        WallOffset.Apply(wall, 5);
+
+        Assert.Equal(new MapPoint(0, 55), wall.Points[0], new PointComparer());
+    }
+
+    [Fact]
+    public void Apply_AfterVertexEdit_KeepsEditAsNewOriginalPath()
+    {
+        var wall = new Wall { Points = [new(0, 0), new(100, 0)] };
+
+        WallOffset.Apply(wall, 10);
+        WallGeometryEditing.SetVertexPosition(wall, 1, new MapPoint(200, 10));
+        WallOffset.Apply(wall, 5);
+
+        // The edited, already-offset line (0,10)-(200,10) is the new base, moved down by 5.
+        Assert.Equal(new MapPoint(0, 15), wall.Points[0], new PointComparer());
+        Assert.Equal(new MapPoint(200, 15), wall.Points[1], new PointComparer());
+    }
+
     private sealed class PointComparer : IEqualityComparer<MapPoint>
     {
         public bool Equals(MapPoint a, MapPoint b) =>

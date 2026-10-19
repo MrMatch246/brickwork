@@ -294,6 +294,8 @@ public sealed class DocumentContentMemento
         target.GroupId = source.GroupId;
         ReplacePoints(target.Points, source.Points);
         SyncPortals(source.Portals, target.Portals);
+        target.Offset = source.Offset;
+        ReplacePoints(target.OffsetBasePoints, source.OffsetBasePoints);
     }
 
     private static void CopyRegionInto(Region source, Region target)
@@ -406,6 +408,8 @@ public sealed class DocumentContentMemento
             GroupId = wall.GroupId,
             Points = wall.Points.ToList(),
             Portals = wall.Portals.Select(ClonePortal).ToList(),
+            Offset = wall.Offset,
+            OffsetBasePoints = wall.OffsetBasePoints.ToList(),
         };
 
     private static Region CloneRegion(Region region) =>
@@ -477,7 +481,9 @@ public sealed class DocumentContentMemento
         a.WallThickness.Equals(b.WallThickness) &&
         a.GroupId == b.GroupId &&
         a.Points.SequenceEqual(b.Points) &&
-        PortalListsEqual(a.Portals, b.Portals);
+        PortalListsEqual(a.Portals, b.Portals) &&
+        a.Offset.Equals(b.Offset) &&
+        a.OffsetBasePoints.SequenceEqual(b.OffsetBasePoints);
 
     private static bool RegionEquals(Region a, Region b) =>
         a.EntityId == b.EntityId &&

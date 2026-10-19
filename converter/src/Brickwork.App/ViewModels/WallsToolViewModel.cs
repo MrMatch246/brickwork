@@ -17,6 +17,7 @@ public partial class WallsToolViewModel : Tool
     private int? _selectionAnchorWallId;
     private object? _treeSelectionAnchor;
     private IReadOnlyList<object>? _renameTargets;
+    private HashSet<int> _lastOffsetSelection = [];
 
     [ObservableProperty]
     private ObservableCollection<WallLayerNodeViewModel> _layers = [];
@@ -27,7 +28,10 @@ public partial class WallsToolViewModel : Tool
     [ObservableProperty]
     private int _treeRevision;
 
-    /// <summary>Scene-unit distance for <see cref="ApplyWallOffsetCommand"/>; positive grows closed walls outward.</summary>
+    /// <summary>
+    /// Scene-unit offset that <see cref="ApplyWallOffsetCommand"/> sets, measured from each wall's original
+    /// path (not added to its current offset); positive grows closed walls outward, 0 restores the path.
+    /// </summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ApplyWallOffsetCommand))]
     private decimal? _offsetDistance = 25m;
@@ -56,6 +60,7 @@ public partial class WallsToolViewModel : Tool
             {
                 OnPropertyChanged(nameof(ApplyWallOffsetLabel));
                 ApplyWallOffsetCommand.NotifyCanExecuteChanged();
+                SyncOffsetDistanceWithSelection();
             }
 
             if (args.PropertyName is nameof(EditorSession.ContentRevision))
@@ -248,13 +253,32 @@ public partial class WallsToolViewModel : Tool
             .ToList();
     }
 
+    /// <summary>
+    /// Shows the selected walls' current offset when the selection changes, so the box reflects
+    /// what Apply would replace. Left alone on hover or when the walls have different offsets.
+    /// </summary>
+    private void SyncOffsetDistanceWithSelection()
+    {
+        if (_lastOffsetSelection.SetEquals(_session.SelectedWallEntityIds))
+        {
+            return;
+        }
+
+        _lastOffsetSelection = _session.SelectedWallEntityIds.ToHashSet();
+        var offsets = GetWallOffsetTargets().Select(wall => wall.Offset).Distinct().ToList();
+        if (_lastOffsetSelection.Count > 0 && offsets.Count == 1)
+        {
+            OffsetDistance = Math.Round((decimal)offsets[0], 2);
+        }
+    }
+
     private bool CanApplyWallOffset() =>
-        OffsetDistance is decimal offset && offset != 0 && GetWallOffsetTargets().Count > 0;
+        OffsetDistance is not null && GetWallOffsetTargets().Count > 0;
 
     [RelayCommand(CanExecute = nameof(CanApplyWallOffset))]
     private void ApplyWallOffset()
     {
-        if (OffsetDistance is not decimal offset || offset == 0)
+        if (OffsetDistance is not decimal offset)
         {
             return;
         }

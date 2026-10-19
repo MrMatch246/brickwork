@@ -45,7 +45,7 @@
         <Grid ColumnDefinitions="Auto,*,Auto"
               ColumnSpacing="6"
               IsVisible="{Binding HasLayers}"
-              ToolTip.Tip="Moves walls away from their Inkarnate path. Closed walls grow outward for positive values and shrink inward for negative ones; open walls move to the right of their drawing direction for positive values.">
+              ToolTip.Tip="Sets how far walls sit from their original Inkarnate path. The value replaces any earlier offset (10 then 5 gives 5) and 0 restores the original path. Closed walls grow outward for positive values and shrink inward for negative ones; open walls move to the right of their drawing direction for positive values.">
             <TextBlock Grid.Column="0"
                        Text="Offset"
                        VerticalAlignment="Center" />

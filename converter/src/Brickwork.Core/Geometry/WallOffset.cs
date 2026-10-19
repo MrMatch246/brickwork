@@ -14,30 +14,71 @@ public static class WallOffset
     private const double MiterLimit = 4d;
 
     /// <summary>
-    /// Offsets <paramref name="wall"/> by <paramref name="distance"/> scene units. Closed walls grow
-    /// outward for positive values and shrink inward for negative ones. Open walls move to the
-    /// right of their drawing direction (as seen on screen) for positive values.
+    /// Sets <paramref name="wall"/>'s offset to <paramref name="distance"/> scene units from its
+    /// original path. The offset is absolute: applying 10 and then 5 leaves the wall 5 units away,
+    /// and 0 restores the original path. Closed walls grow outward for positive values and shrink
+    /// inward for negative ones; open walls move to the right of their drawing direction (as seen
+    /// on screen) for positive values.
     /// </summary>
+    /// <remarks>
+    /// If the wall's points were edited since the last offset, the edited points become the new
+    /// original path, so the edit is kept.
+    /// </remarks>
     public static void Apply(Wall wall, double distance)
     {
-        if (Math.Abs(distance) <= Epsilon || wall.Points.Count < 2)
+        if (wall.Points.Count < 2)
         {
             return;
         }
 
-        var offset = OffsetPolyline(wall.Points.ToList(), distance, wall.IsClosed);
+        if (wall.OffsetBasePoints.Count == 0 || !MatchesOffsetResult(wall))
+        {
+            Replace(wall.OffsetBasePoints, wall.Points);
+            wall.Offset = 0;
+        }
+
+        if (Math.Abs(distance - wall.Offset) <= Epsilon)
+        {
+            return;
+        }
+
+        if (Math.Abs(distance) <= Epsilon)
+        {
+            Replace(wall.Points, wall.OffsetBasePoints);
+            wall.OffsetBasePoints.Clear();
+            wall.Offset = 0;
+            WallGeometryEditing.ResnapPortalAnchors(wall);
+            return;
+        }
+
+        var offset = OffsetPolyline(wall.OffsetBasePoints.ToList(), distance, wall.IsClosed);
         if (offset.Count < 2)
         {
             return;
         }
 
-        wall.Points.Clear();
-        foreach (var point in offset)
-        {
-            wall.Points.Add(point);
-        }
-
+        Replace(wall.Points, offset);
+        wall.Offset = distance;
         WallGeometryEditing.ResnapPortalAnchors(wall);
+    }
+
+    private static bool MatchesOffsetResult(Wall wall)
+    {
+        var expected = Math.Abs(wall.Offset) <= Epsilon
+            ? wall.OffsetBasePoints.ToList()
+            : OffsetPolyline(wall.OffsetBasePoints.ToList(), wall.Offset, wall.IsClosed);
+        return expected.Count == wall.Points.Count &&
+               expected.Zip(wall.Points).All(pair => NearlyEqual(pair.First, pair.Second));
+    }
+
+    private static void Replace(IList<MapPoint> target, IEnumerable<MapPoint> source)
+    {
+        var points = source.ToList();
+        target.Clear();
+        foreach (var point in points)
+        {
+            target.Add(point);
+        }
     }
 
     public static IReadOnlyList<MapPoint> OffsetPolyline(IReadOnlyList<MapPoint> points, double distance, bool isClosed)
