@@ -46,6 +46,10 @@ public sealed class InkarnateImportOptions
     /// </summary>
     public bool ScaleTreeTrunksWithStamp { get; set; } = true;
 
+    /// <summary>Per-version scale and offset from the tree-trunk library, keyed by <see cref="TreeTrunks.VersionKey(int?, string?)"/>.</summary>
+    public IReadOnlyDictionary<string, TreeTrunkAdjustment> TreeAdjustments { get; set; } =
+        new Dictionary<string, TreeTrunkAdjustment>();
+
     public bool AnyRegionDetectionEnabled =>
         DetectRegionsFromColorPaths ||
         DetectRegionsFromNamedContainers ||

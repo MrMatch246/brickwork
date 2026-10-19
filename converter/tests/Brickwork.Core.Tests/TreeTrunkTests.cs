@@ -51,11 +51,11 @@ public class TreeTrunkTests
         Assert.All(trunks, wall => Assert.Equal(WallLineType.Solid, wall.LineType));
         Assert.All(trunks, wall => Assert.Equal(2, wall.Points.Count));
         Assert.All(trunks, wall => Assert.True(TreeTrunks.IsTrunk(wall)));
-        Assert.Equal(10, map.Walls.Single(wall => wall.EntityId == -20).TreeStampId);
+        Assert.Equal(10, map.Walls.Single(wall => wall.EntityId == -20).Trunk!.StampId);
 
         var restored = new MapDocument();
         DocumentContentMemento.Capture(map).RestoreTo(restored);
-        Assert.Equal(10, restored.Walls.Single(wall => wall.EntityId == -20).TreeStampId);
+        Assert.Equal(10, restored.Walls.Single(wall => wall.EntityId == -20).Trunk!.StampId);
 
         var palm = trunks.Where(wall => wall.EntityId is -20 or -21).ToList();
         Assert.Equal(2, palm.Count);
@@ -78,38 +78,88 @@ public class TreeTrunkTests
     {
         var map = await ImportAsync(new InkarnateImportOptions());
 
-        Assert.Equal(501, map.Walls.Single(wall => wall.EntityId == -20).TreeAssetId);
-        Assert.Equal(502, map.Walls.Single(wall => wall.EntityId == -22).TreeAssetId);
+        Assert.Equal(501, map.Walls.Single(wall => wall.EntityId == -20).Trunk!.AssetId);
+        Assert.Equal(502, map.Walls.Single(wall => wall.EntityId == -22).Trunk!.AssetId);
     }
 
     [Fact]
-    public void SetScale_ResizesAroundMiddleAndRemembersFactor()
+    public void Adjust_ScalesAndOffsetsInTheStampsRotatedFrame()
     {
-        var wall = new Wall { TreeStampId = 1, Points = [new(90, 100), new(110, 100)] };
+        var trunk = new TreeTrunk(1, 7, 0, new MapPoint(100, 100), Angle: 90, Unit: 10, BaseSize: 2);
+        var wall = new Wall { Trunk = trunk, Points = [] };
 
-        TreeTrunks.SetScale(wall, 2);
-        Assert.Equal([new MapPoint(80, 100), new MapPoint(120, 100)], wall.Points);
+        TreeTrunks.Adjust(wall, scale: 1.5, offsetX: 1, offsetY: 0);
 
-        TreeTrunks.SetScale(wall, 0.5);
-        Assert.Equal([new MapPoint(95, 100), new MapPoint(105, 100)], wall.Points);
-        Assert.Equal(0.5, wall.TrunkScale);
+        // "Right" in the image is "down" on the map after a 90 degree turn.
+        Assert.Equal(new MapPoint(100, 110), Middle(wall));
+        Assert.Equal(30, Length(wall), precision: 6);
+        Assert.Equal(1.5, wall.Trunk!.Scale);
     }
 
     [Fact]
-    public async Task Reimport_KeepsTrunkScaleOnTopOfNewSize()
+    public async Task Import_AppliesLibraryAdjustmentPerVersion()
     {
-        var map = await ImportAsync(new InkarnateImportOptions());
+        var adjustments = new Dictionary<string, TreeTrunkAdjustment>
+        {
+            [TreeTrunks.VersionKey(501, "Palm Tree")] = new() { Scale = 2, OffsetX = 0.5 },
+        };
+
+        var map = await ImportAsync(new InkarnateImportOptions { TreeAdjustments = adjustments });
+
+        var adjusted = map.Walls.Single(wall => wall.EntityId == -20);
+        Assert.Equal(50, Length(adjusted), precision: 6);
+        Assert.Equal(new MapPoint(225, 300), Middle(adjusted)); // 0.5 squares of 50 to the right
+
+        var otherVersion = map.Walls.Single(wall => wall.EntityId == -22);
+        Assert.Equal(1, otherVersion.Trunk!.Scale);
+    }
+
+    [Fact]
+    public async Task Reimport_TakesAdjustmentsAndNewSizeFromFreshImport()
+    {
+        var adjustments = new Dictionary<string, TreeTrunkAdjustment>
+        {
+            [TreeTrunks.VersionKey(501, "Palm Tree")] = new() { Scale = 2 },
+        };
+        var map = await ImportAsync(new InkarnateImportOptions { TreeAdjustments = adjustments });
         MapReimportMerger.RecordImportedIds(map);
         var palmArm = map.Walls.Single(wall => wall.EntityId == -20);
-        TreeTrunks.SetScale(palmArm, 2);
-        Assert.Equal(50, Length(palmArm), precision: 6);
 
-        var bigger = await ImportAsync(new InkarnateImportOptions { TreeTrunkSize = 1 });
+        var bigger = await ImportAsync(new InkarnateImportOptions { TreeTrunkSize = 1, TreeAdjustments = adjustments });
         MapReimportMerger.Merge(map, bigger, wallsAndRegions: true, lights: false);
 
-        Assert.Equal(2, palmArm.TrunkScale);
+        Assert.Equal(2, palmArm.Trunk!.Scale);
         Assert.Equal(100, Length(palmArm), precision: 6); // 1 square of 50, doubled
         Assert.Equal(new MapPoint(200, 300), Middle(palmArm));
+    }
+
+    [Fact]
+    public void LibraryStore_RoundTripsAndSkipsDefaults()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "brickwork-tests-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new Brickwork.Core.Settings.TreeTrunkLibraryStore(directory);
+            store.Save(new Dictionary<string, TreeTrunkAdjustment>
+            {
+                ["asset:1"] = new() { Name = "Palm Tree", Scale = 1.5, OffsetY = -0.25 },
+                ["asset:2"] = new() { Name = "Oak" },
+            });
+
+            var loaded = store.Load();
+
+            var palm = Assert.Single(loaded);
+            Assert.Equal("asset:1", palm.Key);
+            Assert.Equal(1.5, palm.Value.Scale);
+            Assert.Equal(-0.25, palm.Value.OffsetY);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
     }
 
     [Fact]

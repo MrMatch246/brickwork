@@ -194,9 +194,8 @@ public static class MapReimportMerger
             wall.Portals.Add(portal);
         }
 
-        // Keep the user's trunk scale on top of the newly imported trunk size.
-        wall.TreeAssetId = fresh.TreeAssetId;
-        TreeTrunks.ApplyScale(wall);
+        // Trunk size and adjustments come from the fresh import (which reads the tree-trunk library).
+        wall.Trunk = fresh.Trunk;
 
         if (Math.Abs(offset) > 1e-9)
         {

@@ -49,14 +49,8 @@ public sealed class Wall
     /// <summary>Points before <see cref="Offset"/> was applied; empty when the wall is not offset.</summary>
     public IList<MapPoint> OffsetBasePoints { get; init; } = [];
 
-    /// <summary>Set on the two walls of a tree trunk X: the entity id of the tree stamp.</summary>
-    public int? TreeStampId { get; set; }
-
-    /// <summary>Inkarnate asset id of the tree stamp, telling versions of the same tree kind apart.</summary>
-    public int? TreeAssetId { get; set; }
-
-    /// <summary>User scale factor on a tree trunk X (1 = the size from the import settings).</summary>
-    public double TrunkScale { get; set; } = 1;
+    /// <summary>Set on the two walls of a tree trunk X: how the X is built; see <c>TreeTrunks</c>.</summary>
+    public TreeTrunk? Trunk { get; set; }
 
     public string DisplayName => string.IsNullOrWhiteSpace(Name) ? "Wall" : Name;
 

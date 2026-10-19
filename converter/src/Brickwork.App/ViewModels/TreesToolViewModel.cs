@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Avalonia.Media.Imaging;
 using Dock.Model.Mvvm.Controls;
 using Brickwork.App.Rendering;
@@ -100,12 +101,12 @@ public partial class TreesToolViewModel : Tool
                          .OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase))
             {
                 var versions = kind
-                    .GroupBy(wall => wall.TreeAssetId)
+                    .GroupBy(wall => wall.Trunk!.AssetId)
                     .OrderBy(group => group.Key)
                     .Select((version, index) =>
                     {
                         var trees = version
-                            .GroupBy(wall => wall.TreeStampId)
+                            .GroupBy(wall => wall.Trunk!.StampId)
                             .OrderBy(group => group.Key)
                             .Select((walls, treeIndex) => new TreeItemViewModel(
                                 this,
@@ -189,27 +190,100 @@ public abstract partial class TreeGroupViewModel : ObservableObject
         }
     }
 
+    /// <summary>The versions this row adjusts (a kind adjusts all of its versions).</summary>
+    public abstract IReadOnlyList<TreeVersionViewModel> AdjustedVersions { get; }
+
     /// <summary>Trunk scale factor (1 = size from the import settings); null when the trunks differ.</summary>
     public decimal? Scale
     {
-        get
-        {
-            var scales = Walls.Select(wall => Math.Round(wall.TrunkScale, 2)).Distinct().ToList();
-            return scales.Count == 1 ? (decimal)scales[0] : null;
-        }
+        get => Common(trunk => trunk.Scale);
         set
         {
             if (value is decimal scale && scale > 0 && scale != Scale)
             {
-                Apply("Scale tree trunks", wall => TreeTrunks.SetScale(wall, (double)scale));
+                Adjust("Scale tree trunks", trunk => (Scale: (double)scale, trunk.OffsetX, trunk.OffsetY));
             }
         }
+    }
+
+    /// <summary>Trunk offset to the right, in grid squares in the tree image's frame.</summary>
+    public decimal? OffsetX
+    {
+        get => Common(trunk => trunk.OffsetX);
+        set
+        {
+            if (value is decimal offset && offset != OffsetX)
+            {
+                Adjust("Move tree trunks", trunk => (trunk.Scale, OffsetX: (double)offset, trunk.OffsetY));
+            }
+        }
+    }
+
+    /// <summary>Trunk offset downwards, in grid squares in the tree image's frame.</summary>
+    public decimal? OffsetY
+    {
+        get => Common(trunk => trunk.OffsetY);
+        set
+        {
+            if (value is decimal offset && offset != OffsetY)
+            {
+                Adjust("Move tree trunks", trunk => (trunk.Scale, trunk.OffsetX, OffsetY: (double)offset));
+            }
+        }
+    }
+
+    [RelayCommand]
+    private void ResetAdjustment() => Adjust("Reset tree trunks", _ => (1d, 0d, 0d));
+
+    private decimal? Common(Func<TreeTrunk, double> selector)
+    {
+        var values = Walls
+            .Where(wall => wall.Trunk is not null)
+            .Select(wall => Math.Round(selector(wall.Trunk!), 3))
+            .Distinct()
+            .ToList();
+        return values.Count == 1 ? (decimal)values[0] : null;
+    }
+
+    /// <summary>
+    /// Changes scale/offset of these trunks in the map (one undo step) and remembers the new values
+    /// per version in the tree-trunk library, so other maps using the same tree image get them too.
+    /// </summary>
+    private void Adjust(string name, Func<TreeTrunk, (double Scale, double OffsetX, double OffsetY)> change)
+    {
+        foreach (var version in AdjustedVersions)
+        {
+            if (version.Walls.FirstOrDefault(wall => wall.Trunk is not null)?.Trunk is not { } sample)
+            {
+                continue;
+            }
+
+            var (scale, offsetX, offsetY) = change(sample);
+            _session.SetTreeAdjustment(version.Key, new TreeTrunkAdjustment
+            {
+                Name = version.KindName,
+                Scale = scale,
+                OffsetX = offsetX,
+                OffsetY = offsetY,
+            });
+        }
+
+        Apply(name, wall =>
+        {
+            if (wall.Trunk is { } trunk)
+            {
+                var (scale, offsetX, offsetY) = change(trunk);
+                TreeTrunks.Adjust(wall, scale, offsetX, offsetY);
+            }
+        });
     }
 
     public virtual void RefreshFromModel()
     {
         OnPropertyChanged(nameof(IsActive));
         OnPropertyChanged(nameof(Scale));
+        OnPropertyChanged(nameof(OffsetX));
+        OnPropertyChanged(nameof(OffsetY));
         foreach (var child in ChildNodes)
         {
             switch (child)
@@ -272,6 +346,11 @@ public sealed partial class TreeKindViewModel : TreeGroupViewModel
 
     public override IEnumerable<object> ChildNodes => Versions.Count == 1 ? Versions[0].Trees : Versions;
 
+    public override IReadOnlyList<TreeVersionViewModel> AdjustedVersions => Versions;
+
+    /// <summary>Offsets are per tree image, so they are only editable here when there is one version.</summary>
+    public bool HasSingleVersion => Versions.Count == 1;
+
     public IEnumerable<TreeItemViewModel> AllTrees => Versions.SelectMany(version => version.Trees);
 
     public override void RefreshFromModel()
@@ -303,6 +382,13 @@ public sealed partial class TreeVersionViewModel : TreeGroupViewModel
     }
 
     public int Number { get; }
+
+    public string KindName => Walls[0].DisplayName;
+
+    /// <summary>Key in the tree-trunk library (the Inkarnate image id).</summary>
+    public string Key => TreeTrunks.VersionKey(Walls[0]);
+
+    public override IReadOnlyList<TreeVersionViewModel> AdjustedVersions => [this];
 
     public IReadOnlyList<TreeItemViewModel> Trees { get; }
 

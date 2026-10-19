@@ -1,3 +1,5 @@
+using Brickwork.Core.Geometry;
+
 namespace Brickwork.Core.Models;
 
 /// <summary>
@@ -24,42 +26,42 @@ public static class TreeTrunks
     /// <summary>Negative group id for the trunks of one tree kind on one layer.</summary>
     public static int GroupId(int kindIndex) => -(1_500_000_000 + kindIndex);
 
-    public static bool IsTrunk(Wall wall) => wall.TreeStampId is not null;
+    public static bool IsTrunk(Wall wall) => wall.Trunk is not null;
 
     /// <summary>
-    /// Sets a trunk wall's user scale factor, resizing it around its middle. The factor is kept
-    /// separately from the imported size so a re-import can apply it again.
+    /// Key of a tree version in the tree-trunk library: the Inkarnate asset id, which is the same in
+    /// every map, or the tree's name when the stamp has no asset id.
     /// </summary>
-    public static void SetScale(Wall wall, double scale)
+    public static string VersionKey(int? assetId, string? name) =>
+        assetId is int id
+            ? $"asset:{id}"
+            : $"name:{(name ?? string.Empty).Trim().ToLowerInvariant()}";
+
+    public static string VersionKey(Wall wall) => VersionKey(wall.Trunk?.AssetId, wall.Name);
+
+    /// <summary>Start and end of the trunk wall described by <paramref name="trunk"/>.</summary>
+    public static (MapPoint Start, MapPoint End) BuildArm(TreeTrunk trunk)
     {
-        if (scale <= 0 || wall.Points.Count < 2 || Math.Abs(scale - wall.TrunkScale) < 1e-9)
+        var shifted = new MapPoint(
+            trunk.StampCenter.X + trunk.OffsetX * trunk.Unit,
+            trunk.StampCenter.Y + trunk.OffsetY * trunk.Unit);
+        var center = MapPointTransforms.RotateAround(shifted, trunk.StampCenter, trunk.Angle);
+        return BuildX(center, trunk.BaseSize * trunk.Scale * trunk.Unit, trunk.Angle)[trunk.Arm];
+    }
+
+    /// <summary>Applies a version adjustment to a trunk wall and rebuilds its points.</summary>
+    public static void Adjust(Wall wall, double scale, double offsetX, double offsetY)
+    {
+        if (wall.Trunk is not { } trunk || scale <= 0)
         {
             return;
         }
 
-        ResizeAroundMiddle(wall, scale / (wall.TrunkScale > 0 ? wall.TrunkScale : 1));
-        wall.TrunkScale = scale;
-    }
-
-    /// <summary>Re-applies <see cref="Wall.TrunkScale"/> to freshly imported (unscaled) trunk points.</summary>
-    public static void ApplyScale(Wall wall)
-    {
-        if (wall.TrunkScale > 0 && Math.Abs(wall.TrunkScale - 1) > 1e-9)
-        {
-            ResizeAroundMiddle(wall, wall.TrunkScale);
-        }
-    }
-
-    private static void ResizeAroundMiddle(Wall wall, double factor)
-    {
-        var middle = new MapPoint(wall.Points.Average(point => point.X), wall.Points.Average(point => point.Y));
-        for (var i = 0; i < wall.Points.Count; i++)
-        {
-            var point = wall.Points[i];
-            wall.Points[i] = new MapPoint(
-                middle.X + (point.X - middle.X) * factor,
-                middle.Y + (point.Y - middle.Y) * factor);
-        }
+        wall.Trunk = trunk with { Scale = scale, OffsetX = offsetX, OffsetY = offsetY };
+        var (start, end) = BuildArm(wall.Trunk);
+        wall.Points.Clear();
+        wall.Points.Add(start);
+        wall.Points.Add(end);
     }
 
     /// <summary>The two crossing walls (as point pairs) of an X centred on <paramref name="center"/>.</summary>

@@ -113,6 +113,29 @@ public sealed partial class EditorSession : ObservableObject
     [ObservableProperty]
     private bool _scaleTreeTrunksWithStamp = true;
 
+    private readonly Dictionary<string, TreeTrunkAdjustment> _treeAdjustments = [];
+
+    /// <summary>Per-version tree trunk adjustments (the tree-trunk library, saved to tree-trunks.json).</summary>
+    public IReadOnlyDictionary<string, TreeTrunkAdjustment> TreeAdjustments => _treeAdjustments;
+
+    /// <summary>Raised when <see cref="TreeAdjustments"/> changes, so it can be saved.</summary>
+    public event EventHandler? TreeAdjustmentsChanged;
+
+    public void LoadTreeAdjustments(IReadOnlyDictionary<string, TreeTrunkAdjustment> adjustments)
+    {
+        _treeAdjustments.Clear();
+        foreach (var (key, value) in adjustments)
+        {
+            _treeAdjustments[key] = value;
+        }
+    }
+
+    public void SetTreeAdjustment(string key, TreeTrunkAdjustment adjustment)
+    {
+        _treeAdjustments[key] = adjustment;
+        TreeAdjustmentsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     [ObservableProperty]
     private MapToolKind _activeMapTool = MapToolKind.WallEditing;
 
@@ -159,6 +182,7 @@ public sealed partial class EditorSession : ObservableObject
             TreeExcludeKeywords = TreeExcludeKeywords,
             TreeTrunkSize = TreeTrunkSize,
             ScaleTreeTrunksWithStamp = ScaleTreeTrunksWithStamp,
+            TreeAdjustments = new Dictionary<string, TreeTrunkAdjustment>(_treeAdjustments),
         };
 
     public void NotifyContentChanged()

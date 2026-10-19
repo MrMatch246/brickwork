@@ -19,7 +19,6 @@ internal static class TreeImportDetection
             .Where(layer => !layer.IsVisible)
             .Select(layer => layer.Id)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var armLength = options.TreeTrunkSize * map.Grid.CellSize;
         var trees = stamps.Where(stamp => NameKeywords.MatchesEither(stamp.Name, stamp.DefaultName, include, exclude)).ToList();
 
         // One group per tree kind and layer, so a single checkbox switches e.g. all palm trunks.
@@ -45,24 +44,40 @@ internal static class TreeImportDetection
             {
                 var isActive = stamp.IsEntityVisible &&
                                (stamp.LayerId is null || !hiddenLayers.Contains(stamp.LayerId));
-                var length = options.ScaleTreeTrunksWithStamp ? armLength * stamp.Scale / typicalScale : armLength;
-                var arms = TreeTrunks.BuildX(stamp.Position, length, stamp.Angle);
-                for (var arm = 0; arm < arms.Count; arm++)
+                var unit = map.Grid.CellSize *
+                           (options.ScaleTreeTrunksWithStamp ? stamp.Scale / typicalScale : 1);
+                options.TreeAdjustments.TryGetValue(
+                    TreeTrunks.VersionKey(stamp.AssetId, kind.Key.Kind),
+                    out var adjustment);
+                for (var arm = 0; arm < 2; arm++)
                 {
+                    var trunk = new TreeTrunk(
+                        stamp.EntityId,
+                        stamp.AssetId,
+                        arm,
+                        stamp.Position,
+                        stamp.Angle,
+                        unit,
+                        options.TreeTrunkSize)
+                    {
+                        Scale = adjustment?.Scale ?? 1,
+                        OffsetX = adjustment?.OffsetX ?? 0,
+                        OffsetY = adjustment?.OffsetY ?? 0,
+                    };
+                    var (start, end) = TreeTrunks.BuildArm(trunk);
                     var wall = new Wall
                     {
                         EntityId = TreeTrunks.WallId(stamp.EntityId, arm),
                         Name = kind.Key.Kind,
                         LayerId = stamp.LayerId,
                         GroupId = group.GroupId,
-                        TreeStampId = stamp.EntityId,
-                        TreeAssetId = stamp.AssetId,
+                        Trunk = trunk,
                         LineType = WallLineType.Solid,
                         WallEnabled = true,
                         IsActive = isActive,
                         IsEntityVisible = stamp.IsEntityVisible,
                         Scale = 1,
-                        Points = [arms[arm].Start, arms[arm].End],
+                        Points = [start, end],
                     };
                     map.Walls.Add(wall);
                     group.MemberIds.Add(wall.EntityId);

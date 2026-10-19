@@ -6,6 +6,7 @@ namespace Brickwork.App.Settings;
 public sealed class AppPreferences
 {
     private readonly AppSettingsStore _store;
+    private readonly TreeTrunkLibraryStore _treeTrunkStore;
     private readonly EditorSession _session;
     private bool _suppressSave;
 
@@ -13,7 +14,10 @@ public sealed class AppPreferences
     {
         _session = session;
         _store = store ?? new AppSettingsStore();
+        _treeTrunkStore = new TreeTrunkLibraryStore(Path.GetDirectoryName(_store.SettingsFilePath));
         Apply(_store.Load());
+        _session.LoadTreeAdjustments(_treeTrunkStore.Load());
+        _session.TreeAdjustmentsChanged += (_, _) => _treeTrunkStore.Save(_session.TreeAdjustments);
 
         _session.PropertyChanged += (_, args) =>
         {
