@@ -114,6 +114,19 @@ public class TreeTrunkTests
     }
 
     [Fact]
+    public void Translate_MovesStoredTreeCentreSoAdjustKeepsTheMove()
+    {
+        var wall = new Wall { Trunk = new TreeTrunk(1, 7, 0, new MapPoint(100, 100), 0, 10, 10, 2), Points = [] };
+        TreeTrunks.Adjust(wall, 1, 0, 0);
+
+        Brickwork.Core.Geometry.WallGeometryEditing.Translate(wall, 30, -20);
+        TreeTrunks.Adjust(wall, 2, 0, 0);
+
+        Assert.Equal(new MapPoint(130, 80), Middle(wall));
+        Assert.Equal(40, Length(wall), precision: 6);
+    }
+
+    [Fact]
     public void Adjust_ScalesAndOffsetsInTheStampsRotatedFrame()
     {
         var trunk = new TreeTrunk(1, 7, 0, new MapPoint(100, 100), Angle: 90, Unit: 10, SizeUnit: 10, BaseSize: 2);

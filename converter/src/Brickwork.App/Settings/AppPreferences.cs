@@ -7,6 +7,7 @@ public sealed class AppPreferences
 {
     private readonly AppSettingsStore _store;
     private readonly TreeTrunkLibraryStore _treeTrunkStore;
+    private bool _treeTrunkLibraryDirty;
     private readonly EditorSession _session;
     private bool _suppressSave;
 
@@ -17,7 +18,8 @@ public sealed class AppPreferences
         _treeTrunkStore = new TreeTrunkLibraryStore(Path.GetDirectoryName(_store.SettingsFilePath));
         Apply(_store.Load());
         _session.LoadTreeAdjustments(_treeTrunkStore.Load());
-        _session.TreeAdjustmentsChanged += (_, _) => _treeTrunkStore.Save(_session.TreeAdjustments);
+        // The tree-trunk library is written once, when the app exits (see FlushTreeTrunkLibrary).
+        _session.TreeAdjustmentsChanged += (_, _) => _treeTrunkLibraryDirty = true;
 
         _session.PropertyChanged += (_, args) =>
         {
@@ -50,6 +52,18 @@ public sealed class AppPreferences
     }
 
     public AppSettingsStore Store => _store;
+
+    /// <summary>Writes tree-trunk library changes, if any; called when the app exits.</summary>
+    public void FlushTreeTrunkLibrary()
+    {
+        if (!_treeTrunkLibraryDirty)
+        {
+            return;
+        }
+
+        _treeTrunkLibraryDirty = false;
+        _treeTrunkStore.Save(_session.TreeAdjustments);
+    }
 
     public void Apply(AppSettings settings)
     {

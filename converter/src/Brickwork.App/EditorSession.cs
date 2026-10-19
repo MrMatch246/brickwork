@@ -136,6 +136,16 @@ public sealed partial class EditorSession : ObservableObject
         TreeAdjustmentsChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>Id of the side-panel tab being shown (e.g. "WallsTool", "TreesTool").</summary>
+    [ObservableProperty]
+    private string? _activePanelId;
+
+    public bool IsTreesPanelShown => ActivePanelId == TreesPanelId;
+
+    public const string TreesPanelId = "TreesTool";
+
+    partial void OnActivePanelIdChanged(string? value) => OnPropertyChanged(nameof(IsTreesPanelShown));
+
     [ObservableProperty]
     private MapToolKind _activeMapTool = MapToolKind.WallEditing;
 

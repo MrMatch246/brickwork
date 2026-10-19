@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using Dock.Model.Core;
 using Dock.Model.Mvvm.Controls;
 using Brickwork.App.Rendering;
 using Brickwork.Core.Models;
@@ -91,7 +90,7 @@ public partial class TreesToolViewModel : Tool
 
     internal void NotifySummaryChanged() => OnPropertyChanged(nameof(Summary));
 
-    private bool IsShownTab => Owner is IDock dock && ReferenceEquals(dock.ActiveDockable, this);
+    private bool IsShownTab => _session.IsTreesPanelShown;
 
     /// <summary>
     /// While this tab is shown, a trunk clicked on the map selects its tree version here (the kind
@@ -304,31 +303,16 @@ public abstract partial class TreeGroupViewModel : ObservableObject
     /// </summary>
     private void Adjust(string name, Func<TreeTrunk, (double Scale, double OffsetX, double OffsetY)> change)
     {
-        foreach (var version in AdjustedVersions)
+        if (_session.Map is not { } map)
         {
-            if (version.Walls.FirstOrDefault(wall => wall.Trunk is not null)?.Trunk is not { } sample)
-            {
-                continue;
-            }
-
-            var (scale, offsetX, offsetY) = change(sample);
-            _session.SetTreeAdjustment(version.Key, new TreeTrunkAdjustment
-            {
-                Name = version.KindName,
-                Scale = scale,
-                OffsetX = offsetX,
-                OffsetY = offsetY,
-            });
+            return;
         }
 
-        Apply(name, wall =>
-        {
-            if (wall.Trunk is { } trunk)
-            {
-                var (scale, offsetX, offsetY) = change(trunk);
-                TreeTrunks.Adjust(wall, scale, offsetX, offsetY);
-            }
-        });
+        _session.Execute(
+            name,
+            () => TreeTrunkEditing.AdjustVersions(_session, map, AdjustedVersions.Select(version => version.Key), change));
+        RefreshFromModel();
+        _tool.NotifySummaryChanged();
     }
 
     public virtual void RefreshFromModel()

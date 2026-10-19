@@ -25,6 +25,10 @@ public partial class MainWindowViewModel : ObservableObject
     {
         Session = new EditorSession();
         _preferences = new AppPreferences(Session);
+        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+        {
+            lifetime.Exit += (_, _) => _preferences.FlushTreeTrunkLibrary();
+        }
         _dockFactory = new AppDockFactory(Session);
 
         var layout = _dockFactory.CreateLayout();

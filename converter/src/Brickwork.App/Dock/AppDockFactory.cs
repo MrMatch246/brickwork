@@ -63,7 +63,7 @@ public sealed class AppDockFactory : Factory
 
         var treesTool = new TreesToolViewModel(_session)
         {
-            Id = "TreesTool",
+            Id = EditorSession.TreesPanelId,
             Title = "Trees",
             CanClose = false,
             CanPin = true,
@@ -117,6 +117,15 @@ public sealed class AppDockFactory : Factory
             Alignment = Alignment.Left,
             GripMode = GripMode.Visible,
             Proportion = WallsDockCompactProportion,
+        };
+
+        _session.ActivePanelId = _wallsDock.ActiveDockable?.Id;
+        _wallsDock.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName is nameof(ToolDock.ActiveDockable))
+            {
+                _session.ActivePanelId = _wallsDock.ActiveDockable?.Id;
+            }
         };
 
         importTool.FileDockExpandedChanged = expanded =>
