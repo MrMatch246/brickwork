@@ -97,6 +97,13 @@ public static class MapReimportMerger
             }
         }
 
+        // Groups the fresh import created (e.g. tree trunk groups after enabling tree detection).
+        foreach (var freshGroup in fresh.Groups.Where(group => target.Groups.All(existing => existing.GroupId != group.GroupId)))
+        {
+            freshGroup.MemberIds.Clear();
+            target.Groups.Add(freshGroup);
+        }
+
         var present = target.Walls.Select(wall => wall.EntityId)
             .Concat(target.Regions.Select(region => region.EntityId))
             .ToHashSet();

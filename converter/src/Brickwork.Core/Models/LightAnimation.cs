@@ -34,17 +34,17 @@ public static class LightAnimations
     /// <summary>Guesses an animation from a light's name; open flames win over enclosed ones.</summary>
     public static LightAnimation Detect(string? name)
     {
-        if (LightKeywords.ContainsAnyWord(name, TorchWords))
+        if (NameKeywords.ContainsAnyWord(name, TorchWords))
         {
             return LightAnimation.Torch;
         }
 
-        if (LightKeywords.ContainsAnyWord(name, FlickerWords))
+        if (NameKeywords.ContainsAnyWord(name, FlickerWords))
         {
             return LightAnimation.Flicker;
         }
 
-        return LightKeywords.ContainsAnyWord(name, PulseWords) ? LightAnimation.Pulse : LightAnimation.None;
+        return NameKeywords.ContainsAnyWord(name, PulseWords) ? LightAnimation.Pulse : LightAnimation.None;
     }
 
     /// <summary>Foundry <c>config.animation.type</c>, or null for no animation.</summary>

@@ -99,6 +99,18 @@ public sealed partial class EditorSession : ObservableObject
     private double _lightDimRadius = LightSource.DefaultDimRadius;
 
     [ObservableProperty]
+    private bool _detectTreesFromStamps = true;
+
+    [ObservableProperty]
+    private string _treeKeywords = TreeTrunks.DefaultInclude;
+
+    [ObservableProperty]
+    private string _treeExcludeKeywords = TreeTrunks.DefaultExclude;
+
+    [ObservableProperty]
+    private double _treeTrunkSize = TreeTrunks.DefaultSize;
+
+    [ObservableProperty]
     private MapToolKind _activeMapTool = MapToolKind.WallEditing;
 
     [ObservableProperty]
@@ -139,6 +151,10 @@ public sealed partial class EditorSession : ObservableObject
             DetectLightAnimations = DetectLightAnimations,
             LightBrightRadius = LightBrightRadius,
             LightDimRadius = LightDimRadius,
+            DetectTreesFromStamps = DetectTreesFromStamps,
+            TreeKeywords = TreeKeywords,
+            TreeExcludeKeywords = TreeExcludeKeywords,
+            TreeTrunkSize = TreeTrunkSize,
         };
 
     public void NotifyContentChanged()

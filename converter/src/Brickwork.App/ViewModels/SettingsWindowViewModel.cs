@@ -3,6 +3,7 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Brickwork.Core.Foundry;
+using Brickwork.Core.Models;
 
 namespace Brickwork.App.ViewModels;
 
@@ -70,7 +71,11 @@ public partial class SettingsWindowViewModel : ObservableObject
                 or nameof(EditorSession.LightKeywords)
                 or nameof(EditorSession.LightExcludeKeywords)
                 or nameof(EditorSession.LightBrightRadius)
-                or nameof(EditorSession.LightDimRadius))
+                or nameof(EditorSession.LightDimRadius)
+                or nameof(EditorSession.DetectTreesFromStamps)
+                or nameof(EditorSession.TreeKeywords)
+                or nameof(EditorSession.TreeExcludeKeywords)
+                or nameof(EditorSession.TreeTrunkSize))
             {
                 OnPropertyChanged(args.PropertyName);
             }
@@ -156,6 +161,37 @@ public partial class SettingsWindowViewModel : ObservableObject
     {
         get => _session.LightDimRadius;
         set => _session.LightDimRadius = value;
+    }
+
+    public bool DetectTreesFromStamps
+    {
+        get => _session.DetectTreesFromStamps;
+        set => _session.DetectTreesFromStamps = value;
+    }
+
+    public string TreeKeywords
+    {
+        get => _session.TreeKeywords;
+        set => _session.TreeKeywords = value ?? string.Empty;
+    }
+
+    public string TreeExcludeKeywords
+    {
+        get => _session.TreeExcludeKeywords;
+        set => _session.TreeExcludeKeywords = value ?? string.Empty;
+    }
+
+    public double TreeTrunkSize
+    {
+        get => _session.TreeTrunkSize;
+        set => _session.TreeTrunkSize = value;
+    }
+
+    [RelayCommand]
+    private void ResetTreeKeywords()
+    {
+        TreeKeywords = TreeTrunks.DefaultInclude;
+        TreeExcludeKeywords = TreeTrunks.DefaultExclude;
     }
 
     [RelayCommand]

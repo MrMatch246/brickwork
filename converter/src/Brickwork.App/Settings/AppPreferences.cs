@@ -33,7 +33,11 @@ public sealed class AppPreferences
                 or nameof(EditorSession.LightExcludeKeywords)
                 or nameof(EditorSession.DetectLightAnimations)
                 or nameof(EditorSession.LightBrightRadius)
-                or nameof(EditorSession.LightDimRadius))
+                or nameof(EditorSession.LightDimRadius)
+                or nameof(EditorSession.DetectTreesFromStamps)
+                or nameof(EditorSession.TreeKeywords)
+                or nameof(EditorSession.TreeExcludeKeywords)
+                or nameof(EditorSession.TreeTrunkSize))
             {
                 Save();
             }
@@ -59,6 +63,10 @@ public sealed class AppPreferences
             _session.DetectLightAnimations = settings.DetectLightAnimations;
             _session.LightBrightRadius = settings.LightBrightRadius;
             _session.LightDimRadius = settings.LightDimRadius;
+            _session.DetectTreesFromStamps = settings.DetectTreesFromStamps;
+            _session.TreeKeywords = settings.TreeKeywords ?? string.Empty;
+            _session.TreeExcludeKeywords = settings.TreeExcludeKeywords ?? string.Empty;
+            _session.TreeTrunkSize = settings.TreeTrunkSize;
         }
         finally
         {
@@ -84,6 +92,10 @@ public sealed class AppPreferences
             DetectLightAnimations = _session.DetectLightAnimations,
             LightBrightRadius = _session.LightBrightRadius,
             LightDimRadius = _session.LightDimRadius,
+            DetectTreesFromStamps = _session.DetectTreesFromStamps,
+            TreeKeywords = _session.TreeKeywords,
+            TreeExcludeKeywords = _session.TreeExcludeKeywords,
+            TreeTrunkSize = _session.TreeTrunkSize,
             SkippedUpdateVersion = existing.SkippedUpdateVersion,
         });
     }

@@ -41,6 +41,18 @@ public sealed class AppSettings
     /// <summary>Default dim radius, in grid squares, for detected lights.</summary>
     public double LightDimRadius { get; set; } = LightSource.DefaultDimRadius;
 
+    /// <summary>Add an X of two walls at the trunk of every tree stamp.</summary>
+    public bool DetectTreesFromStamps { get; set; } = true;
+
+    /// <summary>Comma-separated words that mark a stamp as a tree.</summary>
+    public string TreeKeywords { get; set; } = TreeTrunks.DefaultInclude;
+
+    /// <summary>Comma-separated words that rule a stamp out as a tree (e.g. "bush").</summary>
+    public string TreeExcludeKeywords { get; set; } = TreeTrunks.DefaultExclude;
+
+    /// <summary>Length of each trunk wall, in grid squares.</summary>
+    public double TreeTrunkSize { get; set; } = TreeTrunks.DefaultSize;
+
     /// <summary>
     /// Highest release version the user chose to skip (e.g. 1.2.0).
     /// Versions at or below this are not offered again by the startup notifier.

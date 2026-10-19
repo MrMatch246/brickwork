@@ -16,8 +16,8 @@ internal static class LightImportDetection
             return 0;
         }
 
-        var include = LightKeywords.Parse(options.LightKeywords);
-        var exclude = LightKeywords.Parse(options.LightExcludeKeywords);
+        var include = NameKeywords.Parse(options.LightKeywords);
+        var exclude = NameKeywords.Parse(options.LightExcludeKeywords);
         var hiddenLayers = map.Layers
             .Where(layer => !layer.IsVisible)
             .Select(layer => layer.Id)
@@ -28,7 +28,8 @@ internal static class LightImportDetection
         foreach (var stamp in stamps)
         {
             var name = string.IsNullOrWhiteSpace(stamp.Name) ? stamp.DefaultName?.Trim() : stamp.Name.Trim();
-            if (existingIds.Contains(stamp.EntityId) || !IsLightStamp(stamp, include, exclude))
+            if (existingIds.Contains(stamp.EntityId) ||
+                !NameKeywords.MatchesEither(stamp.Name, stamp.DefaultName, include, exclude))
             {
                 continue;
             }
@@ -55,16 +56,6 @@ internal static class LightImportDetection
 
         return added;
     }
-
-    /// <summary>
-    /// Either the custom or the asset name may mark a light, but an exclude word in either one
-    /// (e.g. a lantern renamed to "Lantern (broken)") wins.
-    /// </summary>
-    private static bool IsLightStamp(InkStamp stamp, IReadOnlyList<string> include, IReadOnlyList<string> exclude) =>
-        (LightKeywords.IsLight(stamp.Name, include, exclude) ||
-         LightKeywords.IsLight(stamp.DefaultName, include, exclude)) &&
-        !LightKeywords.IsLight(stamp.Name, exclude, []) &&
-        !LightKeywords.IsLight(stamp.DefaultName, exclude, []);
 
     private static LightAnimation DetectAnimation(string? name, string? sourceName)
     {

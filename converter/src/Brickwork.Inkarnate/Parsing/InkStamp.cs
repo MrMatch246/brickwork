@@ -21,4 +21,7 @@ internal sealed class InkStamp
     public MapPoint Position { get; set; }
 
     public bool IsEntityVisible { get; set; } = true;
+
+    /// <summary>Rotation in degrees (Inkarnate <c>angle</c>).</summary>
+    public double Angle { get; set; }
 }

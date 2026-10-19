@@ -11,8 +11,8 @@ namespace Brickwork.Core.Tests;
 
 public class LightImportExportTests
 {
-    private static readonly IReadOnlyList<string> Include = LightKeywords.Parse(LightKeywords.DefaultInclude);
-    private static readonly IReadOnlyList<string> Exclude = LightKeywords.Parse(LightKeywords.DefaultExclude);
+    private static readonly IReadOnlyList<string> Include = NameKeywords.Parse(LightKeywords.DefaultInclude);
+    private static readonly IReadOnlyList<string> Exclude = NameKeywords.Parse(LightKeywords.DefaultExclude);
 
     [Theory]
     [InlineData("Hand Lantern Lit", true)]
@@ -27,7 +27,7 @@ public class LightImportExportTests
     [InlineData(null, false)]
     public void IsLight_MatchesWholeWords(string? name, bool expected)
     {
-        Assert.Equal(expected, LightKeywords.IsLight(name, Include, Exclude));
+        Assert.Equal(expected, NameKeywords.Matches(name, Include, Exclude));
     }
 
     [Fact]

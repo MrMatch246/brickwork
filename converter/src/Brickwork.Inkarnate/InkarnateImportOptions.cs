@@ -30,6 +30,16 @@ public sealed class InkarnateImportOptions
     /// <summary>Dim radius in grid squares for detected lights.</summary>
     public double LightDimRadius { get; set; } = LightSource.DefaultDimRadius;
 
+    /// <summary>Add an X of two walls at the trunk of every stamp whose name matches the tree words.</summary>
+    public bool DetectTreesFromStamps { get; set; } = true;
+
+    public string TreeKeywords { get; set; } = TreeTrunks.DefaultInclude;
+
+    public string TreeExcludeKeywords { get; set; } = TreeTrunks.DefaultExclude;
+
+    /// <summary>Length of each trunk wall, in grid squares.</summary>
+    public double TreeTrunkSize { get; set; } = TreeTrunks.DefaultSize;
+
     public bool AnyRegionDetectionEnabled =>
         DetectRegionsFromColorPaths ||
         DetectRegionsFromNamedContainers ||

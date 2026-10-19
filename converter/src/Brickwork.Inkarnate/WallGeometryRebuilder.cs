@@ -149,6 +149,7 @@ internal static class WallGeometryRebuilder
             else if (context.StampsByEntityId.TryGetValue(memberId, out var stamp))
             {
                 stamp.Position = MapPointTransforms.RotateAround(stamp.Position, pivot, deltaDegrees);
+                stamp.Angle += deltaDegrees;
             }
             else if (context.GroupsById.TryGetValue(memberId, out var childGroup))
             {

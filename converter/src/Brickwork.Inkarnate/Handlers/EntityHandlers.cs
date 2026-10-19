@@ -124,6 +124,7 @@ internal sealed class StampEntityHandler : IInkEntityHandler
             LayerId = item.LayerId,
             GroupId = groupId is > 0 ? groupId : null,
             Position = new MapPoint(InkJsonReader.ReadDouble(entity, "x"), InkJsonReader.ReadDouble(entity, "y")),
+            Angle = InkJsonReader.ReadDouble(entity, "angle"),
             IsEntityVisible = !(entity.TryGetProperty("isVisible", out var visibleElement) &&
                                 visibleElement.ValueKind == JsonValueKind.False),
         };
