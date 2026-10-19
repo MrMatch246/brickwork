@@ -14,6 +14,11 @@
             <Setter Property="MinHeight" Value="0" />
             <Setter Property="Padding" Value="0" />
         </Style>
+        <Style Selector="NumericUpDown.tree-scale">
+            <Setter Property="MinHeight" Value="24" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
     </UserControl.Styles>
     <ScrollViewer Classes="tool-panel-scroll">
         <Grid Margin="12">
@@ -30,21 +35,66 @@
                 <TreeView ItemsSource="{Binding Kinds}"
                           SelectedItem="{Binding SelectedTreeItem, Mode=TwoWay}">
                     <TreeView.Styles>
-                        <Style Selector="TreeViewItem" x:DataType="vm:TreeKindViewModel">
+                        <Style Selector="TreeViewItem" x:DataType="vm:TreeGroupViewModel">
                             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
                         </Style>
                     </TreeView.Styles>
                     <TreeView.DataTemplates>
                         <TreeDataTemplate DataType="vm:TreeKindViewModel"
                                           ItemsSource="{Binding Children}">
-                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
+                            <Grid ColumnDefinitions="Auto,*,Auto,64" ColumnSpacing="6" Margin="0,2">
                                 <CheckBox IsChecked="{Binding IsActive}"
                                           IsThreeState="False"
                                           VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding Header}"
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding Header}"
                                            FontWeight="SemiBold"
                                            VerticalAlignment="Center" />
-                            </StackPanel>
+                                <TextBlock Grid.Column="2" Text="Scale ×" FontSize="12" VerticalAlignment="Center" />
+                                <NumericUpDown Grid.Column="3"
+                                               Classes="tree-scale"
+                                               Value="{Binding Scale}"
+                                               Minimum="0.1"
+                                               Maximum="10"
+                                               Increment="0.1"
+                                               FormatString="0.##"
+                                               ShowButtonSpinner="False"
+                                               Watermark="mixed"
+                                               ToolTip.Tip="Scale factor for these trunks: 1 is the size from Settings → Import, 2 doubles it."
+                                               VerticalAlignment="Center" />
+                            </Grid>
+                        </TreeDataTemplate>
+
+                        <TreeDataTemplate DataType="vm:TreeVersionViewModel"
+                                          ItemsSource="{Binding Children}">
+                            <Grid ColumnDefinitions="Auto,Auto,*,Auto,64" ColumnSpacing="6" Margin="0,2">
+                                <CheckBox IsChecked="{Binding IsActive}"
+                                          IsThreeState="False"
+                                          VerticalAlignment="Center" />
+                                <Border Grid.Column="1"
+                                        Width="40"
+                                        Height="40"
+                                        CornerRadius="4"
+                                        ClipToBounds="True"
+                                        Background="#20FFFFFF">
+                                    <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
+                                </Border>
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding Header}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="3" Text="Scale ×" FontSize="12" VerticalAlignment="Center" />
+                                <NumericUpDown Grid.Column="4"
+                                               Classes="tree-scale"
+                                               Value="{Binding Scale}"
+                                               Minimum="0.1"
+                                               Maximum="10"
+                                               Increment="0.1"
+                                               FormatString="0.##"
+                                               ShowButtonSpinner="False"
+                                               Watermark="mixed"
+                                               ToolTip.Tip="Scale factor for these trunks: 1 is the size from Settings → Import, 2 doubles it."
+                                               VerticalAlignment="Center" />
+                            </Grid>
                         </TreeDataTemplate>
 
                         <DataTemplate DataType="vm:TreeItemViewModel">

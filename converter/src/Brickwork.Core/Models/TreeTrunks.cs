@@ -26,6 +26,42 @@ public static class TreeTrunks
 
     public static bool IsTrunk(Wall wall) => wall.TreeStampId is not null;
 
+    /// <summary>
+    /// Sets a trunk wall's user scale factor, resizing it around its middle. The factor is kept
+    /// separately from the imported size so a re-import can apply it again.
+    /// </summary>
+    public static void SetScale(Wall wall, double scale)
+    {
+        if (scale <= 0 || wall.Points.Count < 2 || Math.Abs(scale - wall.TrunkScale) < 1e-9)
+        {
+            return;
+        }
+
+        ResizeAroundMiddle(wall, scale / (wall.TrunkScale > 0 ? wall.TrunkScale : 1));
+        wall.TrunkScale = scale;
+    }
+
+    /// <summary>Re-applies <see cref="Wall.TrunkScale"/> to freshly imported (unscaled) trunk points.</summary>
+    public static void ApplyScale(Wall wall)
+    {
+        if (wall.TrunkScale > 0 && Math.Abs(wall.TrunkScale - 1) > 1e-9)
+        {
+            ResizeAroundMiddle(wall, wall.TrunkScale);
+        }
+    }
+
+    private static void ResizeAroundMiddle(Wall wall, double factor)
+    {
+        var middle = new MapPoint(wall.Points.Average(point => point.X), wall.Points.Average(point => point.Y));
+        for (var i = 0; i < wall.Points.Count; i++)
+        {
+            var point = wall.Points[i];
+            wall.Points[i] = new MapPoint(
+                middle.X + (point.X - middle.X) * factor,
+                middle.Y + (point.Y - middle.Y) * factor);
+        }
+    }
+
     /// <summary>The two crossing walls (as point pairs) of an X centred on <paramref name="center"/>.</summary>
     public static IReadOnlyList<(MapPoint Start, MapPoint End)> BuildX(
         MapPoint center,

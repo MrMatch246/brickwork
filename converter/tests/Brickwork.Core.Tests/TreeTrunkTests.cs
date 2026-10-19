@@ -74,6 +74,45 @@ public class TreeTrunkTests
     }
 
     [Fact]
+    public async Task Import_RecordsTreeVersionFromStampAsset()
+    {
+        var map = await ImportAsync(new InkarnateImportOptions());
+
+        Assert.Equal(501, map.Walls.Single(wall => wall.EntityId == -20).TreeAssetId);
+        Assert.Equal(502, map.Walls.Single(wall => wall.EntityId == -22).TreeAssetId);
+    }
+
+    [Fact]
+    public void SetScale_ResizesAroundMiddleAndRemembersFactor()
+    {
+        var wall = new Wall { TreeStampId = 1, Points = [new(90, 100), new(110, 100)] };
+
+        TreeTrunks.SetScale(wall, 2);
+        Assert.Equal([new MapPoint(80, 100), new MapPoint(120, 100)], wall.Points);
+
+        TreeTrunks.SetScale(wall, 0.5);
+        Assert.Equal([new MapPoint(95, 100), new MapPoint(105, 100)], wall.Points);
+        Assert.Equal(0.5, wall.TrunkScale);
+    }
+
+    [Fact]
+    public async Task Reimport_KeepsTrunkScaleOnTopOfNewSize()
+    {
+        var map = await ImportAsync(new InkarnateImportOptions());
+        MapReimportMerger.RecordImportedIds(map);
+        var palmArm = map.Walls.Single(wall => wall.EntityId == -20);
+        TreeTrunks.SetScale(palmArm, 2);
+        Assert.Equal(50, Length(palmArm), precision: 6);
+
+        var bigger = await ImportAsync(new InkarnateImportOptions { TreeTrunkSize = 1 });
+        MapReimportMerger.Merge(map, bigger, wallsAndRegions: true, lights: false);
+
+        Assert.Equal(2, palmArm.TrunkScale);
+        Assert.Equal(100, Length(palmArm), precision: 6); // 1 square of 50, doubled
+        Assert.Equal(new MapPoint(200, 300), Middle(palmArm));
+    }
+
+    [Fact]
     public async Task Import_ScalingDisabled_GivesEveryTrunkTheSameSize()
     {
         var map = await ImportAsync(new InkarnateImportOptions { ScaleTreeTrunksWithStamp = false });
@@ -132,8 +171,8 @@ public class TreeTrunkTests
                   "layerData": { "name": "Hidden", "isVisible": false } },
                 { "transactionId": 3, "cmdType": "cmd-entity-add", "items": [
                   { "layerId": "layer-grid", "entity": { "entityType": "grid", "entityId": 1, "style": { "size": 50 } } },
-                  { "layerId": "layer-trees", "entity": { "entityType": "stamp", "entityId": 10, "defaultName": "Palm Tree", "x": 200, "y": 300, "scale": 1 } },
-                  { "layerId": "layer-trees", "entity": { "entityType": "stamp", "entityId": 11, "defaultName": "Palm Tree", "x": 400, "y": 300, "angle": 30, "scale": 2 } },
+                  { "layerId": "layer-trees", "entity": { "entityType": "stamp", "entityId": 10, "defaultName": "Palm Tree", "stampId": 501, "x": 200, "y": 300, "scale": 1 } },
+                  { "layerId": "layer-trees", "entity": { "entityType": "stamp", "entityId": 11, "defaultName": "Palm Tree", "stampId": 502, "x": 400, "y": 300, "angle": 30, "scale": 2 } },
                   { "layerId": "layer-trees", "entity": { "entityType": "stamp", "entityId": 12, "defaultName": "Berry Bush", "x": 1, "y": 1 } },
                   { "layerId": "layer-trees", "entity": { "entityType": "stamp", "entityId": 13, "defaultName": "Fallen Tree", "x": 2, "y": 2 } },
                   { "layerId": "layer-hidden", "entity": { "entityType": "stamp", "entityId": 14, "defaultName": "Oak", "x": 3, "y": 3 } },

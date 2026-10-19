@@ -136,6 +136,8 @@ public sealed class MapEntityClipboard
             Offset = wall.Offset,
             OffsetBasePoints = wall.OffsetBasePoints.ToList(),
             TreeStampId = wall.TreeStampId,
+            TreeAssetId = wall.TreeAssetId,
+            TrunkScale = wall.TrunkScale,
         };
 
     private static Region CloneRegion(Region region, int? entityId = null) =>

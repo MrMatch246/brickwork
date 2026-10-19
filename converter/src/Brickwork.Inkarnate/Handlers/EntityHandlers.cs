@@ -121,6 +121,7 @@ internal sealed class StampEntityHandler : IInkEntityHandler
             EntityId = entityId.Value,
             Name = InkJsonReader.ReadString(entity, "name"),
             DefaultName = InkJsonReader.ReadString(entity, "defaultName"),
+            AssetId = InkJsonReader.ReadInt(entity, "stampId"),
             LayerId = item.LayerId,
             GroupId = groupId is > 0 ? groupId : null,
             Position = new MapPoint(InkJsonReader.ReadDouble(entity, "x"), InkJsonReader.ReadDouble(entity, "y")),

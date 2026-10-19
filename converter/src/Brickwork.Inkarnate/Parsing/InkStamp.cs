@@ -13,6 +13,9 @@ internal sealed class InkStamp
     /// <summary>Asset name of the stamp (e.g. <c>Hand Lantern Lit</c>).</summary>
     public string? DefaultName { get; set; }
 
+    /// <summary>Inkarnate asset id (<c>stampId</c>); stamps sharing a name can use different assets (versions).</summary>
+    public int? AssetId { get; set; }
+
     public string? LayerId { get; set; }
 
     public int? GroupId { get; set; }

@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Avalonia.Media.Imaging;
 using Dock.Model.Mvvm.Controls;
+using Brickwork.App.Rendering;
 using Brickwork.Core.Models;
 
 namespace Brickwork.App.ViewModels;
@@ -57,7 +59,7 @@ public partial class TreesToolViewModel : Tool
     {
         get
         {
-            var trees = Kinds.SelectMany(kind => kind.Children).ToList();
+            var trees = Kinds.SelectMany(kind => kind.AllTrees).ToList();
             return $"{trees.Count(tree => tree.IsActive)} of {trees.Count} tree trunks exported as walls.";
         }
     }
@@ -73,9 +75,9 @@ public partial class TreesToolViewModel : Tool
         {
             _session.SetSelection(tree.Walls.Select(wall => wall.EntityId), tree.Walls[0].EntityId);
         }
-        else if (value is TreeKindViewModel kind)
+        else if (value is TreeGroupViewModel group)
         {
-            _session.SetSelection(kind.Walls.Select(wall => wall.EntityId));
+            _session.SetSelection(group.Walls.Select(wall => wall.EntityId));
         }
     }
 
@@ -91,17 +93,33 @@ public partial class TreesToolViewModel : Tool
         var kinds = new ObservableCollection<TreeKindViewModel>();
         if (_session.Map is { } map)
         {
+            var thumbnailSize = map.Grid.CellSize > 0 ? map.Grid.CellSize * 2.5 : 0;
             foreach (var kind in map.Walls
                          .Where(TreeTrunks.IsTrunk)
                          .GroupBy(wall => wall.DisplayName, StringComparer.OrdinalIgnoreCase)
                          .OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase))
             {
-                var trees = kind
-                    .GroupBy(wall => wall.TreeStampId)
+                var versions = kind
+                    .GroupBy(wall => wall.TreeAssetId)
                     .OrderBy(group => group.Key)
-                    .Select(group => group.OrderByDescending(wall => wall.EntityId).ToList())
+                    .Select((version, index) =>
+                    {
+                        var trees = version
+                            .GroupBy(wall => wall.TreeStampId)
+                            .OrderBy(group => group.Key)
+                            .Select((walls, treeIndex) => new TreeItemViewModel(
+                                this,
+                                _session,
+                                walls.OrderByDescending(wall => wall.EntityId).ToList(),
+                                treeIndex + 1))
+                            .ToList();
+                        var thumbnail = thumbnailSize > 0
+                            ? MapPreviewThumbnails.Create(map, trees[0].Center, thumbnailSize)
+                            : null;
+                        return new TreeVersionViewModel(this, _session, index + 1, trees, thumbnail);
+                    })
                     .ToList();
-                kinds.Add(new TreeKindViewModel(this, _session, kind.Key, trees)
+                kinds.Add(new TreeKindViewModel(this, _session, kind.Key, versions)
                 {
                     IsExpanded = expanded.Contains(kind.Key),
                 });
@@ -136,7 +154,8 @@ public partial class TreesToolViewModel : Tool
     }
 }
 
-public partial class TreeKindViewModel : ObservableObject
+/// <summary>A set of tree trunks (a tree kind, or one version of it) switched and scaled together.</summary>
+public abstract partial class TreeGroupViewModel : ObservableObject
 {
     private readonly TreesToolViewModel _tool;
     private readonly EditorSession _session;
@@ -144,27 +163,18 @@ public partial class TreeKindViewModel : ObservableObject
     [ObservableProperty]
     private bool _isExpanded;
 
-    public TreeKindViewModel(
-        TreesToolViewModel tool,
-        EditorSession session,
-        string name,
-        IReadOnlyList<IReadOnlyList<Wall>> trees)
+    protected TreeGroupViewModel(TreesToolViewModel tool, EditorSession session, IReadOnlyList<Wall> walls)
     {
         _tool = tool;
         _session = session;
-        Name = name;
-        Children = new ObservableCollection<TreeItemViewModel>(
-            trees.Select((walls, index) => new TreeItemViewModel(tool, session, walls, index + 1)));
-        Walls = trees.SelectMany(walls => walls).ToList();
+        Walls = walls;
     }
-
-    public string Name { get; }
 
     public IReadOnlyList<Wall> Walls { get; }
 
-    public ObservableCollection<TreeItemViewModel> Children { get; }
+    public abstract string Header { get; }
 
-    public string Header => $"{Name} ({Children.Count})";
+    public abstract IEnumerable<object> ChildNodes { get; }
 
     public bool? IsActive
     {
@@ -173,30 +183,136 @@ public partial class TreeKindViewModel : ObservableObject
         {
             // A click on an indeterminate box reaches here as null; treat it as "enable all".
             var enabled = value ?? true;
-            _session.Execute(
+            Apply(
                 enabled ? "Enable tree trunks" : "Disable tree trunks",
-                () =>
-                {
-                    foreach (var wall in Walls)
-                    {
-                        WallLineEditing.SetWallEnabled(wall, enabled);
-                    }
-                });
-            RefreshFromModel();
-            _tool.NotifySummaryChanged();
+                wall => WallLineEditing.SetWallEnabled(wall, enabled));
         }
     }
 
-    public void RefreshFromModel()
+    /// <summary>Trunk scale factor (1 = size from the import settings); null when the trunks differ.</summary>
+    public decimal? Scale
+    {
+        get
+        {
+            var scales = Walls.Select(wall => Math.Round(wall.TrunkScale, 2)).Distinct().ToList();
+            return scales.Count == 1 ? (decimal)scales[0] : null;
+        }
+        set
+        {
+            if (value is decimal scale && scale > 0 && scale != Scale)
+            {
+                Apply("Scale tree trunks", wall => TreeTrunks.SetScale(wall, (double)scale));
+            }
+        }
+    }
+
+    public virtual void RefreshFromModel()
     {
         OnPropertyChanged(nameof(IsActive));
-        foreach (var child in Children)
+        OnPropertyChanged(nameof(Scale));
+        foreach (var child in ChildNodes)
         {
-            child.RefreshFromModel();
+            switch (child)
+            {
+                case TreeGroupViewModel group:
+                    group.RefreshFromModel();
+                    break;
+                case TreeItemViewModel tree:
+                    tree.RefreshFromModel();
+                    break;
+            }
         }
     }
 
     internal static bool IsWallOn(Wall wall) => wall.IsActive && wall.LineType != WallLineType.Disabled;
+
+    private void Apply(string name, Action<Wall> mutate)
+    {
+        _session.Execute(name, () =>
+        {
+            foreach (var wall in Walls)
+            {
+                mutate(wall);
+            }
+        });
+        RefreshFromModel();
+        _tool.NotifySummaryChanged();
+    }
+}
+
+public sealed partial class TreeKindViewModel : TreeGroupViewModel
+{
+    public TreeKindViewModel(
+        TreesToolViewModel tool,
+        EditorSession session,
+        string name,
+        IReadOnlyList<TreeVersionViewModel> versions)
+        : base(tool, session, versions.SelectMany(version => version.Walls).ToList())
+    {
+        Name = name;
+        Versions = versions;
+
+        // Only show the version level when there is more than one version.
+        Children = versions.Count == 1
+            ? new ObservableCollection<object>(versions[0].Trees)
+            : new ObservableCollection<object>(versions);
+    }
+
+    public string Name { get; }
+
+    public IReadOnlyList<TreeVersionViewModel> Versions { get; }
+
+    public ObservableCollection<object> Children { get; }
+
+    public int TreeCount => Versions.Sum(version => version.Trees.Count);
+
+    public override string Header => Versions.Count == 1
+        ? $"{Name} ({TreeCount})"
+        : $"{Name} ({TreeCount}, {Versions.Count} versions)";
+
+    public override IEnumerable<object> ChildNodes => Versions.Count == 1 ? Versions[0].Trees : Versions;
+
+    public IEnumerable<TreeItemViewModel> AllTrees => Versions.SelectMany(version => version.Trees);
+
+    public override void RefreshFromModel()
+    {
+        base.RefreshFromModel();
+        if (Versions.Count == 1)
+        {
+            // The single version is not shown, but its scale backs this row.
+            Versions[0].RefreshFromModel();
+        }
+    }
+}
+
+/// <summary>Trees of one kind that use the same Inkarnate asset (e.g. one of five palm images).</summary>
+public sealed partial class TreeVersionViewModel : TreeGroupViewModel
+{
+    public TreeVersionViewModel(
+        TreesToolViewModel tool,
+        EditorSession session,
+        int number,
+        IReadOnlyList<TreeItemViewModel> trees,
+        Bitmap? thumbnail)
+        : base(tool, session, trees.SelectMany(tree => tree.Walls).ToList())
+    {
+        Number = number;
+        Trees = trees;
+        Children = new ObservableCollection<TreeItemViewModel>(trees);
+        Thumbnail = thumbnail;
+    }
+
+    public int Number { get; }
+
+    public IReadOnlyList<TreeItemViewModel> Trees { get; }
+
+    public ObservableCollection<TreeItemViewModel> Children { get; }
+
+    public Bitmap? Thumbnail { get; }
+
+    public override string Header => $"Version {Number} ({Trees.Count})";
+
+    public override IEnumerable<object> ChildNodes => Trees;
 }
 
 public partial class TreeItemViewModel : ObservableObject
@@ -219,22 +335,22 @@ public partial class TreeItemViewModel : ObservableObject
 
     public string DisplayName => $"#{Number}";
 
-    public string PositionText
+    public MapPoint Center
     {
         get
         {
             var points = Walls.SelectMany(wall => wall.Points).ToList();
             return points.Count == 0
-                ? string.Empty
-                : string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"({points.Average(point => point.X):0}, {points.Average(point => point.Y):0})");
+                ? default
+                : new MapPoint(points.Average(point => point.X), points.Average(point => point.Y));
         }
     }
 
+    public string PositionText => string.Create(CultureInfo.InvariantCulture, $"({Center.X:0}, {Center.Y:0})");
+
     public bool IsActive
     {
-        get => Walls.All(TreeKindViewModel.IsWallOn);
+        get => Walls.All(TreeGroupViewModel.IsWallOn);
         set
         {
             if (IsActive == value)
