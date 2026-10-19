@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Dock.Model.Mvvm.Controls;
 using Brickwork.Core.Models;
 
@@ -223,6 +224,51 @@ public partial class LightKindViewModel : ObservableObject
         }
     }
 
+    public IReadOnlyList<LightAnimation> AnimationOptions => LightAnimations.All;
+
+    /// <summary>Null when the lights of this kind use different animations.</summary>
+    public LightAnimation? Animation
+    {
+        get => Lights.Select(light => light.Animation).Distinct().Count() == 1 ? Lights[0].Animation : null;
+        set
+        {
+            if (value is LightAnimation animation && animation != Animation)
+            {
+                Apply("Change light animation", light => light.Animation = animation);
+            }
+        }
+    }
+
+    public bool HasAnimation => Animation is not (LightAnimation.None or null);
+
+    public decimal? AnimationSpeed
+    {
+        get => CommonValue(light => light.AnimationSpeed);
+        set
+        {
+            if (value is decimal speed)
+            {
+                Apply("Change animation speed", light => light.AnimationSpeed = (int)Math.Clamp(speed, 1, 10));
+            }
+        }
+    }
+
+    public decimal? AnimationIntensity
+    {
+        get => CommonValue(light => light.AnimationIntensity);
+        set
+        {
+            if (value is decimal intensity)
+            {
+                Apply("Change animation intensity", light => light.AnimationIntensity = (int)Math.Clamp(intensity, 1, 10));
+            }
+        }
+    }
+
+    /// <summary>Picks the animation from the kind's name, as import does.</summary>
+    [RelayCommand]
+    private void DetectAnimation() => Animation = LightAnimations.Detect(Name);
+
     public IBrush ColorBrush =>
         LightColors.TryParse(Color, out var red, out var green, out var blue)
             ? new SolidColorBrush(Avalonia.Media.Color.FromRgb(red, green, blue))
@@ -235,6 +281,10 @@ public partial class LightKindViewModel : ObservableObject
         OnPropertyChanged(nameof(DimRadius));
         OnPropertyChanged(nameof(Color));
         OnPropertyChanged(nameof(ColorBrush));
+        OnPropertyChanged(nameof(Animation));
+        OnPropertyChanged(nameof(HasAnimation));
+        OnPropertyChanged(nameof(AnimationSpeed));
+        OnPropertyChanged(nameof(AnimationIntensity));
         foreach (var child in Children)
         {
             child.RefreshFromModel();

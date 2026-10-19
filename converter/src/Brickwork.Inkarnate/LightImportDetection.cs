@@ -33,11 +33,12 @@ internal static class LightImportDetection
                 continue;
             }
 
+            var sourceName = stamp.DefaultName?.Trim();
             map.Lights.Add(new LightSource
             {
                 EntityId = stamp.EntityId,
                 Name = name,
-                SourceName = stamp.DefaultName?.Trim(),
+                SourceName = sourceName,
                 LayerId = stamp.LayerId,
                 GroupId = stamp.GroupId,
                 Position = stamp.Position,
@@ -45,6 +46,9 @@ internal static class LightImportDetection
                            (stamp.LayerId is null || !hiddenLayers.Contains(stamp.LayerId)),
                 BrightRadius = options.LightBrightRadius,
                 DimRadius = options.LightDimRadius,
+                Animation = options.DetectLightAnimations
+                    ? DetectAnimation(name, sourceName)
+                    : LightAnimation.None,
             });
             added++;
         }
@@ -61,4 +65,10 @@ internal static class LightImportDetection
          LightKeywords.IsLight(stamp.DefaultName, include, exclude)) &&
         !LightKeywords.IsLight(stamp.Name, exclude, []) &&
         !LightKeywords.IsLight(stamp.DefaultName, exclude, []);
+
+    private static LightAnimation DetectAnimation(string? name, string? sourceName)
+    {
+        var fromName = LightAnimations.Detect(name);
+        return fromName != LightAnimation.None ? fromName : LightAnimations.Detect(sourceName);
+    }
 }

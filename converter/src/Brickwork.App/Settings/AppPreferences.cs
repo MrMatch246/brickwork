@@ -31,6 +31,7 @@ public sealed class AppPreferences
                 or nameof(EditorSession.DetectLightsFromStamps)
                 or nameof(EditorSession.LightKeywords)
                 or nameof(EditorSession.LightExcludeKeywords)
+                or nameof(EditorSession.DetectLightAnimations)
                 or nameof(EditorSession.LightBrightRadius)
                 or nameof(EditorSession.LightDimRadius))
             {
@@ -55,6 +56,7 @@ public sealed class AppPreferences
             _session.DetectLightsFromStamps = settings.DetectLightsFromStamps;
             _session.LightKeywords = settings.LightKeywords ?? string.Empty;
             _session.LightExcludeKeywords = settings.LightExcludeKeywords ?? string.Empty;
+            _session.DetectLightAnimations = settings.DetectLightAnimations;
             _session.LightBrightRadius = settings.LightBrightRadius;
             _session.LightDimRadius = settings.LightDimRadius;
         }
@@ -79,6 +81,7 @@ public sealed class AppPreferences
             DetectLightsFromStamps = _session.DetectLightsFromStamps,
             LightKeywords = _session.LightKeywords,
             LightExcludeKeywords = _session.LightExcludeKeywords,
+            DetectLightAnimations = _session.DetectLightAnimations,
             LightBrightRadius = _session.LightBrightRadius,
             LightDimRadius = _session.LightDimRadius,
             SkippedUpdateVersion = existing.SkippedUpdateVersion,

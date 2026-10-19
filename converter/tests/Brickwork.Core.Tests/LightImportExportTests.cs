@@ -51,6 +51,11 @@ public class LightImportExportTests
         Assert.Equal(20, lights[16].GroupId);
 
         Assert.All(map.Lights, light => Assert.Equal(LightSource.DefaultDimRadius, light.DimRadius));
+
+        // Animations come from the names.
+        Assert.Equal(LightAnimation.Flicker, lights[10].Animation);
+        Assert.Equal(LightAnimation.Torch, lights[13].Animation);
+        Assert.Equal(LightAnimation.Torch, lights[16].Animation);
     }
 
     [Fact]
@@ -59,6 +64,14 @@ public class LightImportExportTests
         var map = await ImportAsync(new InkarnateImportOptions { DetectLightsFromStamps = false });
 
         Assert.Empty(map.Lights);
+    }
+
+    [Fact]
+    public async Task Import_AnimationDetectionDisabled_LeavesLightsStill()
+    {
+        var map = await ImportAsync(new InkarnateImportOptions { DetectLightAnimations = false });
+
+        Assert.All(map.Lights, light => Assert.Equal(LightAnimation.None, light.Animation));
     }
 
     [Fact]
@@ -98,6 +111,9 @@ public class LightImportExportTests
         Assert.Equal(LightSource.DefaultBrightRadius * 5, config.GetProperty("bright").GetDouble());
         Assert.Equal(LightSource.DefaultDimRadius * 5, config.GetProperty("dim").GetDouble());
         Assert.Equal(LightSource.DefaultColor, config.GetProperty("color").GetString());
+        var animation = config.GetProperty("animation");
+        Assert.Equal("flame", animation.GetProperty("type").GetString());
+        Assert.Equal(LightAnimations.DefaultSpeed, animation.GetProperty("speed").GetInt32());
     }
 
     [Fact]

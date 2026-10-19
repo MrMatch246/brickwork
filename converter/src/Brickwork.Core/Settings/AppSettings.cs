@@ -32,6 +32,9 @@ public sealed class AppSettings
     /// <summary>Comma-separated words that rule a stamp out as a light source (e.g. "broken").</summary>
     public string LightExcludeKeywords { get; set; } = Models.LightKeywords.DefaultExclude;
 
+    /// <summary>Pick a flicker/pulse animation for detected lights from their names.</summary>
+    public bool DetectLightAnimations { get; set; } = true;
+
     /// <summary>Default bright radius, in grid squares, for detected lights.</summary>
     public double LightBrightRadius { get; set; } = LightSource.DefaultBrightRadius;
 

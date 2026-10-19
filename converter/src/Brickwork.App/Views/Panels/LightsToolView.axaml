@@ -1,11 +1,23 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="using:Brickwork.App.Converters"
+             xmlns:models="using:Brickwork.Core.Models"
              xmlns:vm="using:Brickwork.App.ViewModels"
              x:Class="Brickwork.App.Views.Panels.LightsToolView"
              x:DataType="vm:LightsToolViewModel"
              Classes="tool-panel"
              Focusable="True">
+    <UserControl.Resources>
+        <conv:LightAnimationDisplayConverter x:Key="LightAnimationDisplayConverter" />
+    </UserControl.Resources>
     <UserControl.Styles>
+        <Style Selector="ComboBox.light-animation">
+            <Setter Property="MinHeight" Value="24" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Padding" Value="6,0" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
         <Style Selector="TreeViewItem">
             <Setter Property="Padding" Value="0" />
             <Setter Property="MinHeight" Value="0" />
@@ -97,6 +109,54 @@
                                              Classes="light-color"
                                              Text="{Binding Color}"
                                              Watermark="#rrggbb" />
+                                </Grid>
+                                <Grid ColumnDefinitions="Auto,96,Auto,Auto,52,Auto,52"
+                                      ColumnSpacing="4"
+                                      Margin="24,0,0,0">
+                                    <TextBlock Grid.Column="0" Text="Animation" VerticalAlignment="Center" FontSize="12" />
+                                    <ComboBox Grid.Column="1"
+                                              Classes="light-animation"
+                                              HorizontalAlignment="Stretch"
+                                              ItemsSource="{Binding AnimationOptions}"
+                                              SelectedItem="{Binding Animation}"
+                                              PlaceholderText="mixed">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate DataType="models:LightAnimation">
+                                                <TextBlock Text="{Binding Converter={StaticResource LightAnimationDisplayConverter}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <Button Grid.Column="2"
+                                            Content="Auto"
+                                            Padding="6,0"
+                                            Height="24"
+                                            FontSize="12"
+                                            ToolTip.Tip="Pick the animation from the name: torches and fires flicker strongly, lanterns and candles gently, glowing things pulse."
+                                            Command="{Binding DetectAnimationCommand}" />
+                                    <TextBlock Grid.Column="3" Text="Speed" VerticalAlignment="Center" FontSize="12"
+                                               IsVisible="{Binding HasAnimation}" />
+                                    <NumericUpDown Grid.Column="4"
+                                                   Classes="light-radius"
+                                                   Value="{Binding AnimationSpeed}"
+                                                   Minimum="1"
+                                                   Maximum="10"
+                                                   Increment="1"
+                                                   FormatString="0"
+                                                   ShowButtonSpinner="False"
+                                                   Watermark="mixed"
+                                                   IsVisible="{Binding HasAnimation}" />
+                                    <TextBlock Grid.Column="5" Text="Intensity" VerticalAlignment="Center" FontSize="12"
+                                               IsVisible="{Binding HasAnimation}" />
+                                    <NumericUpDown Grid.Column="6"
+                                                   Classes="light-radius"
+                                                   Value="{Binding AnimationIntensity}"
+                                                   Minimum="1"
+                                                   Maximum="10"
+                                                   Increment="1"
+                                                   FormatString="0"
+                                                   ShowButtonSpinner="False"
+                                                   Watermark="mixed"
+                                                   IsVisible="{Binding HasAnimation}" />
                                 </Grid>
                             </StackPanel>
                         </TreeDataTemplate>

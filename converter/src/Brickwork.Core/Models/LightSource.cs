@@ -33,6 +33,14 @@ public sealed class LightSource
     /// <summary>Light tint as <c>#rrggbb</c>.</summary>
     public string Color { get; set; } = DefaultColor;
 
+    public LightAnimation Animation { get; set; }
+
+    /// <summary>Animation speed, 1 (slow) to 10 (fast).</summary>
+    public int AnimationSpeed { get; set; } = LightAnimations.DefaultSpeed;
+
+    /// <summary>Animation intensity, 1 (subtle) to 10 (strong).</summary>
+    public int AnimationIntensity { get; set; } = LightAnimations.DefaultIntensity;
+
     public string DisplayName => string.IsNullOrWhiteSpace(Name) ? "Light" : Name;
 
     /// <summary>Key used to group lights of the same kind in the editor.</summary>

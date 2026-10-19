@@ -62,6 +62,10 @@ public static class WallOffset
         WallGeometryEditing.ResnapPortalAnchors(wall);
     }
 
+    /// <summary>The wall's path before any offset.</summary>
+    public static IList<MapPoint> OriginalPath(Wall wall) =>
+        wall.OffsetBasePoints.Count > 0 ? wall.OffsetBasePoints : wall.Points;
+
     private static bool MatchesOffsetResult(Wall wall)
     {
         var expected = Math.Abs(wall.Offset) <= Epsilon

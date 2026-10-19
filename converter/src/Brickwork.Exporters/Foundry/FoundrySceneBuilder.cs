@@ -110,9 +110,9 @@ internal static class FoundrySceneBuilder
                 ["shadows"] = 0,
                 ["animation"] = new JsonObject
                 {
-                    ["type"] = null,
-                    ["speed"] = 5,
-                    ["intensity"] = 5,
+                    ["type"] = light.AnimationType,
+                    ["speed"] = light.AnimationSpeed,
+                    ["intensity"] = light.AnimationIntensity,
                     ["reverse"] = false,
                 },
                 ["darkness"] = new JsonObject

@@ -43,6 +43,12 @@ public sealed class MapDocument
 
     public IList<LightSource> Lights { get; init; } = [];
 
+    /// <summary>
+    /// Ids of walls, regions and lights that came from the source file (as opposed to ones drawn in
+    /// Brickwork). Lets a re-import tell user deletions from entities that are new to the source.
+    /// </summary>
+    public ISet<int> ImportedEntityIds { get; init; } = new HashSet<int>();
+
     public CompatibilityReport? Compatibility { get; set; }
 }
 

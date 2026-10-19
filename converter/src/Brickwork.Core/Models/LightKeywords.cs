@@ -26,6 +26,13 @@ public static class LightKeywords
         return words.Count > 0 && ContainsAny(words, include) && !ContainsAny(words, exclude);
     }
 
+    /// <summary>True when <paramref name="name"/> contains one of <paramref name="keywords"/> as a whole word.</summary>
+    public static bool ContainsAnyWord(string? name, IReadOnlyList<string> keywords)
+    {
+        var words = SplitWords(name);
+        return words.Count > 0 && ContainsAny(words, keywords);
+    }
+
     private static bool ContainsAny(IReadOnlyList<string> words, IReadOnlyList<string> keywords)
     {
         foreach (var keyword in keywords)

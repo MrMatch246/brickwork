@@ -13,6 +13,17 @@ public partial class SettingsWindowViewModel : ObservableObject
     [ObservableProperty]
     private SettingsCategory _selectedCategory = SettingsCategory.Import;
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ApplyToOpenMapCommand))]
+    private bool _applyWallsAndRegions = true;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ApplyToOpenMapCommand))]
+    private bool _applyLights = true;
+
+    [ObservableProperty]
+    private string? _applyStatus;
+
     public SettingsWindowViewModel(EditorSession session)
     {
         _session = session;
@@ -48,7 +59,14 @@ public partial class SettingsWindowViewModel : ObservableObject
                 OnPropertyChanged(nameof(DetectRegionsFromPathNames));
             }
 
+            if (args.PropertyName is nameof(EditorSession.Map) or nameof(EditorSession.SourceFilePath))
+            {
+                ApplyToOpenMapCommand.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(OpenMapDescription));
+            }
+
             if (args.PropertyName is nameof(EditorSession.DetectLightsFromStamps)
+                or nameof(EditorSession.DetectLightAnimations)
                 or nameof(EditorSession.LightKeywords)
                 or nameof(EditorSession.LightExcludeKeywords)
                 or nameof(EditorSession.LightBrightRadius)
@@ -105,6 +123,27 @@ public partial class SettingsWindowViewModel : ObservableObject
     {
         get => _session.LightExcludeKeywords;
         set => _session.LightExcludeKeywords = value ?? string.Empty;
+    }
+
+    public bool DetectLightAnimations
+    {
+        get => _session.DetectLightAnimations;
+        set => _session.DetectLightAnimations = value;
+    }
+
+    public string OpenMapDescription => ImportSettingsApplier.CanApply(_session)
+        ? $"Re-reads {Path.GetFileName(_session.SourceFilePath)} with the settings above and rebuilds the chosen parts of the open map."
+        : "Open a source map to apply changed settings to it. Otherwise they apply the next time you open a map.";
+
+    private bool CanApplyToOpenMap() =>
+        ImportSettingsApplier.CanApply(_session) && (ApplyWallsAndRegions || ApplyLights);
+
+    [RelayCommand(CanExecute = nameof(CanApplyToOpenMap))]
+    private async Task ApplyToOpenMapAsync()
+    {
+        ApplyStatus = "Applying…";
+        ApplyStatus = await ImportSettingsApplier.ApplyAsync(_session, ApplyWallsAndRegions, ApplyLights)
+            .ConfigureAwait(true);
     }
 
     public double LightBrightRadius

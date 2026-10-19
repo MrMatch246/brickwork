@@ -3,6 +3,7 @@ using Brickwork.App.Editing;
 using Brickwork.Core.Editing;
 using Brickwork.Core.Geometry;
 using Brickwork.Core.Models;
+using Brickwork.Inkarnate;
 
 namespace Brickwork.App;
 
@@ -89,6 +90,9 @@ public sealed partial class EditorSession : ObservableObject
     private string _lightExcludeKeywords = Core.Models.LightKeywords.DefaultExclude;
 
     [ObservableProperty]
+    private bool _detectLightAnimations = true;
+
+    [ObservableProperty]
     private double _lightBrightRadius = LightSource.DefaultBrightRadius;
 
     [ObservableProperty]
@@ -120,6 +124,22 @@ public sealed partial class EditorSession : ObservableObject
 
     /// <summary>True while a drag/edit gesture is open (history coalesced until dispose).</summary>
     public bool IsGestureActive => _activeGesture is not null;
+
+    /// <summary>Import options built from the current settings.</summary>
+    public InkarnateImportOptions CreateImportOptions() =>
+        new()
+        {
+            WallSimplificationTolerance = WallSimplificationTolerance,
+            DetectRegionsFromColorPaths = DetectRegionsFromColorPaths,
+            DetectRegionsFromNamedContainers = DetectRegionsFromNamedContainers,
+            DetectRegionsFromPathNames = DetectRegionsFromPathNames,
+            DetectLightsFromStamps = DetectLightsFromStamps,
+            LightKeywords = LightKeywords,
+            LightExcludeKeywords = LightExcludeKeywords,
+            DetectLightAnimations = DetectLightAnimations,
+            LightBrightRadius = LightBrightRadius,
+            LightDimRadius = LightDimRadius,
+        };
 
     public void NotifyContentChanged()
     {

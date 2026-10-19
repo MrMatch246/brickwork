@@ -21,6 +21,9 @@ public sealed class InkarnateImportOptions
 
     public string LightExcludeKeywords { get; set; } = Core.Models.LightKeywords.DefaultExclude;
 
+    /// <summary>Pick a flicker/pulse animation for detected lights from their names.</summary>
+    public bool DetectLightAnimations { get; set; } = true;
+
     /// <summary>Bright radius in grid squares for detected lights.</summary>
     public double LightBrightRadius { get; set; } = LightSource.DefaultBrightRadius;
 

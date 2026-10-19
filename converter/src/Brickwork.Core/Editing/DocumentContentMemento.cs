@@ -13,8 +13,10 @@ public sealed class DocumentContentMemento
         IReadOnlyList<Wall> walls,
         IReadOnlyList<Region> regions,
         IReadOnlyList<EntityGroup> groups,
-        IReadOnlyList<LightSource> lights)
+        IReadOnlyList<LightSource> lights,
+        IReadOnlySet<int> importedEntityIds)
     {
+        ImportedEntityIds = importedEntityIds;
         Layers = layers;
         Walls = walls;
         Regions = regions;
@@ -32,13 +34,16 @@ public sealed class DocumentContentMemento
 
     public IReadOnlyList<LightSource> Lights { get; }
 
+    public IReadOnlySet<int> ImportedEntityIds { get; }
+
     public static DocumentContentMemento Capture(MapDocument map) =>
         new(
             map.Layers.Select(CloneLayer).ToList(),
             map.Walls.Select(CloneWall).ToList(),
             map.Regions.Select(CloneRegion).ToList(),
             map.Groups.Select(CloneGroup).ToList(),
-            map.Lights.Select(CloneLight).ToList());
+            map.Lights.Select(CloneLight).ToList(),
+            map.ImportedEntityIds.ToHashSet());
 
     public void RestoreTo(MapDocument map)
     {
@@ -47,6 +52,8 @@ public sealed class DocumentContentMemento
         RestoreRegions(map);
         RestoreGroups(map);
         RestoreLights(map);
+        map.ImportedEntityIds.Clear();
+        map.ImportedEntityIds.UnionWith(ImportedEntityIds);
     }
 
     public bool ContentEquals(DocumentContentMemento other)
@@ -55,7 +62,8 @@ public sealed class DocumentContentMemento
             Walls.Count != other.Walls.Count ||
             Regions.Count != other.Regions.Count ||
             Groups.Count != other.Groups.Count ||
-            Lights.Count != other.Lights.Count)
+            Lights.Count != other.Lights.Count ||
+            !ImportedEntityIds.SetEquals(other.ImportedEntityIds))
         {
             return false;
         }
@@ -265,6 +273,9 @@ public sealed class DocumentContentMemento
         target.BrightRadius = source.BrightRadius;
         target.DimRadius = source.DimRadius;
         target.Color = source.Color;
+        target.Animation = source.Animation;
+        target.AnimationSpeed = source.AnimationSpeed;
+        target.AnimationIntensity = source.AnimationIntensity;
     }
 
     private static void CopyLayerInto(MapLayer source, MapLayer target)
@@ -541,5 +552,8 @@ public sealed class DocumentContentMemento
         a.Position.Equals(b.Position) &&
         a.BrightRadius.Equals(b.BrightRadius) &&
         a.DimRadius.Equals(b.DimRadius) &&
-        a.Color == b.Color;
+        a.Color == b.Color &&
+        a.Animation == b.Animation &&
+        a.AnimationSpeed == b.AnimationSpeed &&
+        a.AnimationIntensity == b.AnimationIntensity;
 }
