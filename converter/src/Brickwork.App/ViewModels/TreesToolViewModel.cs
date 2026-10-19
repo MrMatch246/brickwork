@@ -284,8 +284,21 @@ public abstract partial class TreeGroupViewModel : ObservableObject
         }
     }
 
+    /// <summary>Back to the built-in value for these versions (scale 1, no offset when there is none).</summary>
     [RelayCommand]
-    private void ResetAdjustment() => Adjust("Reset tree trunks", _ => (1d, 0d, 0d));
+    private void ResetAdjustment()
+    {
+        if (_session.Map is not { } map)
+        {
+            return;
+        }
+
+        _session.Execute(
+            "Reset tree trunks",
+            () => TreeTrunkEditing.ResetVersions(_session, map, AdjustedVersions.Select(version => version.Key)));
+        RefreshFromModel();
+        _tool.NotifySummaryChanged();
+    }
 
     private decimal? Common(Func<TreeTrunk, double> selector)
     {

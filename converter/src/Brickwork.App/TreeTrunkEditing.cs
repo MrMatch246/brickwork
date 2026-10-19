@@ -45,8 +45,27 @@ public static class TreeTrunkEditing
 
             foreach (var wall in walls)
             {
+                // Rounded like the library file, so the map matches what a re-import produces.
                 var (wallScale, wallOffsetX, wallOffsetY) = change(wall.Trunk!);
-                TreeTrunks.Adjust(wall, wallScale, wallOffsetX, wallOffsetY);
+                TreeTrunks.Adjust(
+                    wall,
+                    Math.Round(wallScale, 3),
+                    Math.Round(wallOffsetX, 3),
+                    Math.Round(wallOffsetY, 3));
+            }
+        }
+    }
+
+    /// <summary>Returns the given versions to their built-in (or unadjusted) values, in the library and the map.</summary>
+    public static void ResetVersions(EditorSession session, MapDocument map, IEnumerable<string> versionKeys)
+    {
+        foreach (var key in versionKeys.Distinct())
+        {
+            var walls = TrunksOfVersion(map, key);
+            var value = session.ResetTreeAdjustment(key, walls.FirstOrDefault()?.DisplayName);
+            foreach (var wall in walls)
+            {
+                TreeTrunks.Adjust(wall, value.Scale, value.OffsetX, value.OffsetY);
             }
         }
     }

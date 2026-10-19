@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Brickwork.Core.Foundry;
 using Brickwork.Core.Models;
+using Brickwork.Core.Settings;
 
 namespace Brickwork.App.ViewModels;
 
@@ -192,6 +193,28 @@ public partial class SettingsWindowViewModel : ObservableObject
     {
         get => _session.TreeTrunkGrowthPercent;
         set => _session.TreeTrunkGrowthPercent = value;
+    }
+
+    [ObservableProperty]
+    private string? _treeLibraryStatus;
+
+    /// <summary>
+    /// Copies all tree version adjustments (built-in values plus the user's) as JSON. Pasting it over
+    /// resources/tree-trunks.json in the repository updates Brickwork's built-in values.
+    /// </summary>
+    [RelayCommand]
+    private async Task CopyTreeLibraryAsync()
+    {
+        if (Avalonia.Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
+            desktop.MainWindow?.Clipboard is not { } clipboard)
+        {
+            TreeLibraryStatus = "Clipboard not available.";
+            return;
+        }
+
+        var library = _session.TreeLibrary.Effective;
+        await clipboard.SetTextAsync(TreeTrunkLibraryStore.Serialize(library)).ConfigureAwait(true);
+        TreeLibraryStatus = $"Copied {library.Count(entry => !entry.Value.Rounded().IsIdentity)} tree versions.";
     }
 
     [RelayCommand]

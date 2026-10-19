@@ -1,3 +1,4 @@
+using Brickwork.Core.Models;
 using Brickwork.Core.Settings;
 
 namespace Brickwork.App.Settings;
@@ -17,7 +18,7 @@ public sealed class AppPreferences
         _store = store ?? new AppSettingsStore();
         _treeTrunkStore = new TreeTrunkLibraryStore(Path.GetDirectoryName(_store.SettingsFilePath));
         Apply(_store.Load());
-        _session.LoadTreeAdjustments(_treeTrunkStore.Load());
+        _session.LoadTreeLibrary(new TreeTrunkLibrary(TreeTrunkLibraryStore.LoadBuiltIn(), _treeTrunkStore.Load()));
         // The tree-trunk library is written once, when the app exits (see FlushTreeTrunkLibrary).
         _session.TreeAdjustmentsChanged += (_, _) => _treeTrunkLibraryDirty = true;
 
@@ -62,7 +63,7 @@ public sealed class AppPreferences
         }
 
         _treeTrunkLibraryDirty = false;
-        _treeTrunkStore.Save(_session.TreeAdjustments);
+        _treeTrunkStore.Save(_session.TreeLibrary.UserValues);
     }
 
     public void Apply(AppSettings settings)

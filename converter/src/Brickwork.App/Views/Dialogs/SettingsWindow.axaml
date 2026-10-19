@@ -166,6 +166,18 @@
                                        Value="{Binding TreeTrunkGrowthPercent}" Width="110" />
                     </StackPanel>
 
+                    <TextBlock Text="Tree versions: scale and trunk offset per tree image are set in the Trees tab and saved when Brickwork closes. Brickwork ships built-in values; yours are kept on top."
+                               TextWrapping="Wrap"
+                               Opacity="0.75" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Copy tree-trunk library"
+                                Command="{Binding CopyTreeLibraryCommand}"
+                                ToolTip.Tip="Copies all tree version adjustments (built-in plus yours) as JSON, to share them or to update Brickwork's built-in list (resources/tree-trunks.json in the repository)." />
+                        <TextBlock Text="{Binding TreeLibraryStatus}"
+                                   VerticalAlignment="Center"
+                                   Opacity="0.85" />
+                    </StackPanel>
+
                     <Border BorderBrush="#4A5364"
                             BorderThickness="1"
                             CornerRadius="4"

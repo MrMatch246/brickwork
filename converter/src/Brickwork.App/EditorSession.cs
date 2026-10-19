@@ -113,27 +113,26 @@ public sealed partial class EditorSession : ObservableObject
     [ObservableProperty]
     private double _treeTrunkGrowthPercent = TreeTrunks.DefaultGrowthPercent;
 
-    private readonly Dictionary<string, TreeTrunkAdjustment> _treeAdjustments = [];
+    /// <summary>Per-version tree trunk adjustments: built-in values plus the user's (tree-trunks.json).</summary>
+    public TreeTrunkLibrary TreeLibrary { get; private set; } = new();
 
-    /// <summary>Per-version tree trunk adjustments (the tree-trunk library, saved to tree-trunks.json).</summary>
-    public IReadOnlyDictionary<string, TreeTrunkAdjustment> TreeAdjustments => _treeAdjustments;
-
-    /// <summary>Raised when <see cref="TreeAdjustments"/> changes, so it can be saved.</summary>
+    /// <summary>Raised when the user's tree trunk adjustments change, so they can be saved.</summary>
     public event EventHandler? TreeAdjustmentsChanged;
 
-    public void LoadTreeAdjustments(IReadOnlyDictionary<string, TreeTrunkAdjustment> adjustments)
-    {
-        _treeAdjustments.Clear();
-        foreach (var (key, value) in adjustments)
-        {
-            _treeAdjustments[key] = value;
-        }
-    }
+    public void LoadTreeLibrary(TreeTrunkLibrary library) => TreeLibrary = library;
 
     public void SetTreeAdjustment(string key, TreeTrunkAdjustment adjustment)
     {
-        _treeAdjustments[key] = adjustment;
+        TreeLibrary.Set(key, adjustment);
         TreeAdjustmentsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Returns a version to its built-in value; returns that value.</summary>
+    public TreeTrunkAdjustment ResetTreeAdjustment(string key, string? name)
+    {
+        var value = TreeLibrary.Reset(key, name);
+        TreeAdjustmentsChanged?.Invoke(this, EventArgs.Empty);
+        return value;
     }
 
     /// <summary>Id of the side-panel tab being shown (e.g. "WallsTool", "TreesTool").</summary>
@@ -192,7 +191,7 @@ public sealed partial class EditorSession : ObservableObject
             TreeExcludeKeywords = TreeExcludeKeywords,
             TreeTrunkSize = TreeTrunkSize,
             TreeTrunkGrowthPercent = TreeTrunkGrowthPercent,
-            TreeAdjustments = new Dictionary<string, TreeTrunkAdjustment>(_treeAdjustments),
+            TreeAdjustments = TreeLibrary.Effective,
         };
 
     public void NotifyContentChanged()

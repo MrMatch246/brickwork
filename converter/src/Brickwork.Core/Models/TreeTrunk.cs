@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Brickwork.Core.Models;
 
 /// <summary>
@@ -45,5 +47,25 @@ public sealed class TreeTrunkAdjustment
 
     public double OffsetY { get; set; }
 
-    public bool IsDefault => Math.Abs(Scale - 1) < 1e-9 && Math.Abs(OffsetX) < 1e-9 && Math.Abs(OffsetY) < 1e-9;
+    /// <summary>Scale 1 and no offset, i.e. the trunk as imported.</summary>
+    [JsonIgnore]
+    public bool IsIdentity => Math.Abs(Scale - 1) < 1e-9 && Math.Abs(OffsetX) < 1e-9 && Math.Abs(OffsetY) < 1e-9;
+
+    /// <summary>Same scale and offset (the name is only informational).</summary>
+    public bool SameValues(TreeTrunkAdjustment other) =>
+        Math.Abs(Scale - other.Scale) < 1e-9 &&
+        Math.Abs(OffsetX - other.OffsetX) < 1e-9 &&
+        Math.Abs(OffsetY - other.OffsetY) < 1e-9;
+
+    /// <summary>A copy with values rounded to <paramref name="decimals"/> places, as stored in library files.</summary>
+    public TreeTrunkAdjustment Rounded(int decimals = 3) =>
+        new()
+        {
+            Name = Name,
+            Scale = Math.Round(Scale, decimals),
+            OffsetX = Math.Round(OffsetX, decimals),
+            OffsetY = Math.Round(OffsetY, decimals),
+        };
+
+    public static TreeTrunkAdjustment Identity(string? name = null) => new() { Name = name };
 }
