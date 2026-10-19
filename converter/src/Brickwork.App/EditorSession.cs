@@ -53,6 +53,15 @@ public sealed partial class EditorSession : ObservableObject
     private int _highlightRevision;
 
     [ObservableProperty]
+    private int? _focusedLightEntityId;
+
+    [ObservableProperty]
+    private int? _hoveredLightEntityId;
+
+    [ObservableProperty]
+    private bool _showLightRadii = true;
+
+    [ObservableProperty]
     private double _wallSimplificationTolerance = WallSimplificationSettings.DefaultToleranceSceneUnits;
 
     [ObservableProperty]
@@ -69,6 +78,21 @@ public sealed partial class EditorSession : ObservableObject
 
     [ObservableProperty]
     private bool _detectRegionsFromPathNames = true;
+
+    [ObservableProperty]
+    private bool _detectLightsFromStamps = true;
+
+    [ObservableProperty]
+    private string _lightKeywords = Core.Models.LightKeywords.DefaultInclude;
+
+    [ObservableProperty]
+    private string _lightExcludeKeywords = Core.Models.LightKeywords.DefaultExclude;
+
+    [ObservableProperty]
+    private double _lightBrightRadius = LightSource.DefaultBrightRadius;
+
+    [ObservableProperty]
+    private double _lightDimRadius = LightSource.DefaultDimRadius;
 
     [ObservableProperty]
     private MapToolKind _activeMapTool = MapToolKind.WallEditing;

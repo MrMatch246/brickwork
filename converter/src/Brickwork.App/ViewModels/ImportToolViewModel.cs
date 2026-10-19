@@ -150,6 +150,11 @@ public partial class ImportToolViewModel : Tool
                     DetectRegionsFromColorPaths = _session.DetectRegionsFromColorPaths,
                     DetectRegionsFromNamedContainers = _session.DetectRegionsFromNamedContainers,
                     DetectRegionsFromPathNames = _session.DetectRegionsFromPathNames,
+                    DetectLightsFromStamps = _session.DetectLightsFromStamps,
+                    LightKeywords = _session.LightKeywords,
+                    LightExcludeKeywords = _session.LightExcludeKeywords,
+                    LightBrightRadius = _session.LightBrightRadius,
+                    LightDimRadius = _session.LightDimRadius,
                 });
             var map = await importer.ImportAsync(input).ConfigureAwait(true);
             map.SourceFileName = Path.GetFileName(path);

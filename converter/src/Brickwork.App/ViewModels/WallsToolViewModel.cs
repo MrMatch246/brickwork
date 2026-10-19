@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Avalonia.Input;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Dock.Model.Mvvm.Controls;
 using Brickwork.Core.Geometry;
 using Brickwork.Core.Models;
@@ -26,6 +27,11 @@ public partial class WallsToolViewModel : Tool
     [ObservableProperty]
     private int _treeRevision;
 
+    /// <summary>Scene-unit distance for <see cref="ApplyWallOffsetCommand"/>; positive grows closed walls outward.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ApplyWallOffsetCommand))]
+    private decimal? _offsetDistance = 25m;
+
     public bool HasLayers => Layers.Count > 0;
 
     public bool ShowEmptyMessage => !HasLayers;
@@ -42,6 +48,14 @@ public partial class WallsToolViewModel : Tool
             if (args.PropertyName is nameof(EditorSession.Map))
             {
                 RebuildLayers();
+            }
+
+            if (args.PropertyName is nameof(EditorSession.Map)
+                or nameof(EditorSession.ContentRevision)
+                or nameof(EditorSession.HighlightRevision))
+            {
+                OnPropertyChanged(nameof(ApplyWallOffsetLabel));
+                ApplyWallOffsetCommand.NotifyCanExecuteChanged();
             }
 
             if (args.PropertyName is nameof(EditorSession.ContentRevision))
@@ -212,6 +226,54 @@ public partial class WallsToolViewModel : Tool
         _session.ActiveMapTool = MapToolKind.RegionEditing;
         _session.RequestRegionTreeFocus(converted[^1]);
         return true;
+    }
+
+    public string ApplyWallOffsetLabel => _session.SelectedWallEntityIds.Count switch
+    {
+        0 => "Apply to all walls",
+        1 => "Apply to selected wall",
+        var count => $"Apply to {count} selected walls",
+    };
+
+    private IReadOnlyList<Wall> GetWallOffsetTargets()
+    {
+        if (_session.Map is null)
+        {
+            return [];
+        }
+
+        var selected = _session.SelectedWallEntityIds;
+        return _session.Map.Walls
+            .Where(wall => wall.Points.Count >= 2 && (selected.Count == 0 || selected.Contains(wall.EntityId)))
+            .ToList();
+    }
+
+    private bool CanApplyWallOffset() =>
+        OffsetDistance is decimal offset && offset != 0 && GetWallOffsetTargets().Count > 0;
+
+    [RelayCommand(CanExecute = nameof(CanApplyWallOffset))]
+    private void ApplyWallOffset()
+    {
+        if (OffsetDistance is not decimal offset || offset == 0)
+        {
+            return;
+        }
+
+        var targets = GetWallOffsetTargets();
+        if (targets.Count == 0)
+        {
+            return;
+        }
+
+        _session.Execute(
+            targets.Count == 1 ? "Offset wall" : "Offset walls",
+            () =>
+            {
+                foreach (var wall in targets)
+                {
+                    WallOffset.Apply(wall, (double)offset);
+                }
+            });
     }
 
     public IReadOnlyList<object> GetEditTargets(object? item)

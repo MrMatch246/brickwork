@@ -3,7 +3,7 @@ using Brickwork.Core.Models;
 namespace Brickwork.Core.Editing;
 
 /// <summary>
-/// Deep snapshot of editable map content (layers + walls + regions + groups) for undo/redo.
+/// Deep snapshot of editable map content (layers + walls + regions + groups + lights) for undo/redo.
 /// Restore updates existing instances in place so UI bindings keep working.
 /// </summary>
 public sealed class DocumentContentMemento
@@ -12,12 +12,14 @@ public sealed class DocumentContentMemento
         IReadOnlyList<MapLayer> layers,
         IReadOnlyList<Wall> walls,
         IReadOnlyList<Region> regions,
-        IReadOnlyList<EntityGroup> groups)
+        IReadOnlyList<EntityGroup> groups,
+        IReadOnlyList<LightSource> lights)
     {
         Layers = layers;
         Walls = walls;
         Regions = regions;
         Groups = groups;
+        Lights = lights;
     }
 
     public IReadOnlyList<MapLayer> Layers { get; }
@@ -28,12 +30,15 @@ public sealed class DocumentContentMemento
 
     public IReadOnlyList<EntityGroup> Groups { get; }
 
+    public IReadOnlyList<LightSource> Lights { get; }
+
     public static DocumentContentMemento Capture(MapDocument map) =>
         new(
             map.Layers.Select(CloneLayer).ToList(),
             map.Walls.Select(CloneWall).ToList(),
             map.Regions.Select(CloneRegion).ToList(),
-            map.Groups.Select(CloneGroup).ToList());
+            map.Groups.Select(CloneGroup).ToList(),
+            map.Lights.Select(CloneLight).ToList());
 
     public void RestoreTo(MapDocument map)
     {
@@ -41,6 +46,7 @@ public sealed class DocumentContentMemento
         RestoreWalls(map);
         RestoreRegions(map);
         RestoreGroups(map);
+        RestoreLights(map);
     }
 
     public bool ContentEquals(DocumentContentMemento other)
@@ -48,7 +54,8 @@ public sealed class DocumentContentMemento
         if (Layers.Count != other.Layers.Count ||
             Walls.Count != other.Walls.Count ||
             Regions.Count != other.Regions.Count ||
-            Groups.Count != other.Groups.Count)
+            Groups.Count != other.Groups.Count ||
+            Lights.Count != other.Lights.Count)
         {
             return false;
         }
@@ -80,6 +87,14 @@ public sealed class DocumentContentMemento
         for (var i = 0; i < Groups.Count; i++)
         {
             if (!GroupEquals(Groups[i], other.Groups[i]))
+            {
+                return false;
+            }
+        }
+
+        for (var i = 0; i < Lights.Count; i++)
+        {
+            if (!LightEquals(Lights[i], other.Lights[i]))
             {
                 return false;
             }
@@ -212,6 +227,44 @@ public sealed class DocumentContentMemento
                 map.Groups.Add(CloneGroup(source));
             }
         }
+    }
+
+    private void RestoreLights(MapDocument map)
+    {
+        var targetById = Lights.ToDictionary(light => light.EntityId);
+        for (var index = map.Lights.Count - 1; index >= 0; index--)
+        {
+            if (!targetById.ContainsKey(map.Lights[index].EntityId))
+            {
+                map.Lights.RemoveAt(index);
+            }
+        }
+
+        var existingById = map.Lights.ToDictionary(light => light.EntityId);
+        foreach (var source in Lights)
+        {
+            if (existingById.TryGetValue(source.EntityId, out var existing))
+            {
+                CopyLightInto(source, existing);
+            }
+            else
+            {
+                map.Lights.Add(CloneLight(source));
+            }
+        }
+    }
+
+    private static void CopyLightInto(LightSource source, LightSource target)
+    {
+        target.Name = source.Name;
+        target.SourceName = source.SourceName;
+        target.LayerId = source.LayerId;
+        target.GroupId = source.GroupId;
+        target.IsActive = source.IsActive;
+        target.Position = source.Position;
+        target.BrightRadius = source.BrightRadius;
+        target.DimRadius = source.DimRadius;
+        target.Color = source.Color;
     }
 
     private static void CopyLayerInto(MapLayer source, MapLayer target)
@@ -379,6 +432,13 @@ public sealed class DocumentContentMemento
             LineType = portal.LineType,
         };
 
+    private static LightSource CloneLight(LightSource light)
+    {
+        var clone = new LightSource { EntityId = light.EntityId };
+        CopyLightInto(light, clone);
+        return clone;
+    }
+
     private static EntityGroup CloneGroup(EntityGroup group) =>
         new()
         {
@@ -464,4 +524,16 @@ public sealed class DocumentContentMemento
         a.RotationPivot.Equals(b.RotationPivot) &&
         a.Angle.Equals(b.Angle) &&
         a.MemberIds.SequenceEqual(b.MemberIds);
+
+    private static bool LightEquals(LightSource a, LightSource b) =>
+        a.EntityId == b.EntityId &&
+        a.Name == b.Name &&
+        a.SourceName == b.SourceName &&
+        a.LayerId == b.LayerId &&
+        a.GroupId == b.GroupId &&
+        a.IsActive == b.IsActive &&
+        a.Position.Equals(b.Position) &&
+        a.BrightRadius.Equals(b.BrightRadius) &&
+        a.DimRadius.Equals(b.DimRadius) &&
+        a.Color == b.Color;
 }

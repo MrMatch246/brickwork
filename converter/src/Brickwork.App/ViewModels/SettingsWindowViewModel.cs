@@ -47,6 +47,15 @@ public partial class SettingsWindowViewModel : ObservableObject
             {
                 OnPropertyChanged(nameof(DetectRegionsFromPathNames));
             }
+
+            if (args.PropertyName is nameof(EditorSession.DetectLightsFromStamps)
+                or nameof(EditorSession.LightKeywords)
+                or nameof(EditorSession.LightExcludeKeywords)
+                or nameof(EditorSession.LightBrightRadius)
+                or nameof(EditorSession.LightDimRadius))
+            {
+                OnPropertyChanged(args.PropertyName);
+            }
         };
     }
 
@@ -78,6 +87,43 @@ public partial class SettingsWindowViewModel : ObservableObject
     {
         get => _session.DetectRegionsFromPathNames;
         set => _session.DetectRegionsFromPathNames = value;
+    }
+
+    public bool DetectLightsFromStamps
+    {
+        get => _session.DetectLightsFromStamps;
+        set => _session.DetectLightsFromStamps = value;
+    }
+
+    public string LightKeywords
+    {
+        get => _session.LightKeywords;
+        set => _session.LightKeywords = value ?? string.Empty;
+    }
+
+    public string LightExcludeKeywords
+    {
+        get => _session.LightExcludeKeywords;
+        set => _session.LightExcludeKeywords = value ?? string.Empty;
+    }
+
+    public double LightBrightRadius
+    {
+        get => _session.LightBrightRadius;
+        set => _session.LightBrightRadius = value;
+    }
+
+    public double LightDimRadius
+    {
+        get => _session.LightDimRadius;
+        set => _session.LightDimRadius = value;
+    }
+
+    [RelayCommand]
+    private void ResetLightKeywords()
+    {
+        LightKeywords = Core.Models.LightKeywords.DefaultInclude;
+        LightExcludeKeywords = Core.Models.LightKeywords.DefaultExclude;
     }
 
     public bool ShowDebugPanel

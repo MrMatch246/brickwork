@@ -41,6 +41,25 @@
                    TextWrapping="Wrap"
                    IsVisible="{Binding ShowEmptyMessage}" />
 
+        <StackPanel Spacing="8">
+        <Grid ColumnDefinitions="Auto,*,Auto"
+              ColumnSpacing="6"
+              IsVisible="{Binding HasLayers}"
+              ToolTip.Tip="Moves walls away from their Inkarnate path. Closed walls grow outward for positive values and shrink inward for negative ones; open walls move to the right of their drawing direction for positive values.">
+            <TextBlock Grid.Column="0"
+                       Text="Offset"
+                       VerticalAlignment="Center" />
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding OffsetDistance, Mode=TwoWay}"
+                           Increment="5"
+                           FormatString="0.##"
+                           MinWidth="90"
+                           HorizontalAlignment="Stretch" />
+            <Button Grid.Column="2"
+                    Content="{Binding ApplyWallOffsetLabel}"
+                    Command="{Binding ApplyWallOffsetCommand}" />
+        </Grid>
+
         <TreeView x:Name="WallsTree"
                   ItemsSource="{Binding Layers}"
                   SelectedItem="{Binding SelectedTreeItem, Mode=TwoWay}"
@@ -174,6 +193,7 @@
                 </DataTemplate>
             </TreeView.DataTemplates>
         </TreeView>
+        </StackPanel>
         </Grid>
     </ScrollViewer>
 </UserControl>

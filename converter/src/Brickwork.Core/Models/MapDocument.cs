@@ -85,13 +85,4 @@ public sealed class GridInfo
     public int Rows { get; set; }
 }
 
-public sealed class LightSource
-{
-    public MapPoint Position { get; set; } = new();
-
-    public double Range { get; set; }
-
-    public string Color { get; set; } = "#ffffff";
-}
-
 public readonly record struct MapPoint(double X, double Y);
