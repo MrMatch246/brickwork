@@ -55,7 +55,7 @@ public sealed class AppDockFactory : Factory
 
         var lightsTool = new LightsToolViewModel(_session)
         {
-            Id = "LightsTool",
+            Id = EditorSession.LightsPanelId,
             Title = "Lights",
             CanClose = false,
             CanPin = true,

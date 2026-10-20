@@ -137,7 +137,7 @@ public sealed class MapSceneRenderer : IMapSceneRenderer
         SceneTransform transform,
         MapRenderHighlight? highlight)
     {
-        if (map.Lights.Count == 0)
+        if (map.Lights.Count == 0 || highlight?.ShowLights == false)
         {
             return;
         }
@@ -160,9 +160,9 @@ public sealed class MapSceneRenderer : IMapSceneRenderer
 
             if (light.IsActive && pixelsPerSquare > 0 && (showRadii || emphasized))
             {
-                fill.Color = color.WithAlpha(emphasized ? (byte)0x38 : (byte)0x18);
+                fill.Color = color.WithAlpha(emphasized ? (byte)0x1C : (byte)0x0C);
                 canvas.DrawCircle(x, y, (float)light.DimRadius * pixelsPerSquare, fill);
-                fill.Color = color.WithAlpha(emphasized ? (byte)0x50 : (byte)0x28);
+                fill.Color = color.WithAlpha(emphasized ? (byte)0x28 : (byte)0x14);
                 canvas.DrawCircle(x, y, (float)light.BrightRadius * pixelsPerSquare, fill);
 
                 if (emphasized)

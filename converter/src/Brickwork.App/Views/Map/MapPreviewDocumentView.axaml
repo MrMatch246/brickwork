@@ -39,6 +39,7 @@
                                              HoveredRegionEntityId="{Binding HoveredRegionEntityId}"
                                              FocusedLightEntityId="{Binding FocusedLightEntityId}"
                                              HoveredLightEntityId="{Binding HoveredLightEntityId}"
+                                             ShowLights="{Binding ShowLights}"
                                              ShowLightRadii="{Binding ShowLightRadii}"
                                              ShowWallHandles="{Binding IsWallEditingToolActive}"
                                              ShowRegionHandles="{Binding IsRegionEditingToolActive}"

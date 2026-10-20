@@ -143,7 +143,15 @@ public sealed partial class EditorSession : ObservableObject
 
     public const string TreesPanelId = "TreesTool";
 
-    partial void OnActivePanelIdChanged(string? value) => OnPropertyChanged(nameof(IsTreesPanelShown));
+    public bool IsLightsPanelShown => ActivePanelId == LightsPanelId;
+
+    public const string LightsPanelId = "LightsTool";
+
+    partial void OnActivePanelIdChanged(string? value)
+    {
+        OnPropertyChanged(nameof(IsTreesPanelShown));
+        OnPropertyChanged(nameof(IsLightsPanelShown));
+    }
 
     [ObservableProperty]
     private MapToolKind _activeMapTool = MapToolKind.WallEditing;

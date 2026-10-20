@@ -79,6 +79,10 @@ public partial class MapPreviewDocumentViewModel : Document
     [ObservableProperty]
     private bool _showLightRadii = true;
 
+    /// <summary>Lights are only drawn while the Lights tab is shown.</summary>
+    [ObservableProperty]
+    private bool _showLights;
+
     public MapPreviewDocumentViewModel(EditorSession session)
     {
         _session = session;
@@ -116,7 +120,8 @@ public partial class MapPreviewDocumentViewModel : Document
                 or nameof(EditorSession.HoveredRegionEntityId)
                 or nameof(EditorSession.FocusedLightEntityId)
                 or nameof(EditorSession.HoveredLightEntityId)
-                or nameof(EditorSession.ShowLightRadii))
+                or nameof(EditorSession.ShowLightRadii)
+                or nameof(EditorSession.IsLightsPanelShown))
             {
                 UpdateHighlightFromSession();
             }
@@ -170,6 +175,7 @@ public partial class MapPreviewDocumentViewModel : Document
         FocusedLightEntityId = _session.FocusedLightEntityId;
         HoveredLightEntityId = _session.HoveredLightEntityId;
         ShowLightRadii = _session.ShowLightRadii;
+        ShowLights = _session.IsLightsPanelShown;
     }
 
     public void UpdateHoverAt(MapPoint previewPoint)
