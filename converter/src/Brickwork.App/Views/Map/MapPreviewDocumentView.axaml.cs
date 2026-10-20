@@ -648,7 +648,10 @@ public partial class MapPreviewDocumentView : UserControl
             if (Math.Abs(delta.X) <= ClickMoveThreshold && Math.Abs(delta.Y) <= ClickMoveThreshold)
             {
                 var shiftToggle = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
-                viewModel.HandlePrimaryClick(ToPreviewPoint(leftReleasePosition), shiftToggle);
+                viewModel.HandlePrimaryClick(
+                    ToPreviewPoint(leftReleasePosition),
+                    shiftToggle,
+                    isDoubleClick: _leftClickCount >= 2);
                 e.Handled = true;
             }
         }

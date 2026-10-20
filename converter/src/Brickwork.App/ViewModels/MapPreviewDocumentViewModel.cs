@@ -1042,6 +1042,24 @@ public partial class MapPreviewDocumentViewModel : Document
         _session.RequestWallTreeFocus(hit.Wall);
     }
 
+    private void SelectWallAt(MapPoint previewPoint)
+    {
+        if (Map is null || WallHitTester.Pick(Map, previewPoint, tolerancePreviewPixels: 8) is not { } hit)
+        {
+            return;
+        }
+
+        // Keep a multi-selection so a following double-click changes all selected walls.
+        var selectedIds = _session.SelectedWallEntityIds;
+        if (hit.Portal is null && selectedIds.Contains(hit.Wall.EntityId) && selectedIds.Count > 1)
+        {
+            _session.SetSelection(selectedIds, hit.Wall.EntityId);
+            return;
+        }
+
+        _session.RequestWallTreeFocus(hit.Wall, hit.Portal);
+    }
+
     public bool TryAddPortalAt(MapPoint previewPoint)
     {
         if (Map is null || _session.ActiveMapTool != MapToolKind.WallEditing || IsDrawingWall)
@@ -1560,7 +1578,7 @@ public partial class MapPreviewDocumentViewModel : Document
         _session.RequestRegionTreeFocus(hit.Region);
     }
 
-    public void HandlePrimaryClick(MapPoint previewPoint, bool shiftSelect = false)
+    public void HandlePrimaryClick(MapPoint previewPoint, bool shiftSelect = false, bool isDoubleClick = false)
     {
         switch (_session.ActiveMapTool)
         {
@@ -1591,9 +1609,14 @@ public partial class MapPreviewDocumentViewModel : Document
                     // On the Trees tab a click only selects the tree; it never cycles the wall type.
                     _session.RequestWallTreeFocus(trunkHit.Wall);
                 }
-                else
+                else if (isDoubleClick)
                 {
                     EditWallAt(previewPoint, cycleType: true);
+                }
+                else
+                {
+                    // A single click only selects; double-click changes the wall type.
+                    SelectWallAt(previewPoint);
                 }
 
                 break;
