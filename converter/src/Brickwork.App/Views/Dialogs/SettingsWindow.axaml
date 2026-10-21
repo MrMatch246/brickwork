@@ -222,6 +222,14 @@
                                 MinWidth="88"
                                 Command="{Binding BrowseFoundryMapsPathCommand}" />
                     </Grid>
+                    <TextBlock Text="Pixels per grid square"
+                               FontWeight="SemiBold" />
+                    <TextBlock Text="Foundry grid size used when no map image is found in the maps folder. With a matching image, the image's own pixels per square are used so it stays sharp."
+                               TextWrapping="Wrap"
+                               Opacity="0.75" />
+                    <NumericUpDown Minimum="50" Maximum="1000" Increment="10" FormatString="0"
+                                   Value="{Binding FoundryGridSize}" Width="110"
+                                   HorizontalAlignment="Left" />
                 </StackPanel>
 
                 <StackPanel Spacing="12" IsVisible="{Binding IsGeneralSelected}">

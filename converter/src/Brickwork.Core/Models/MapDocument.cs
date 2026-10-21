@@ -26,6 +26,11 @@ public sealed class MapDocument
     public string? FoundryMapsDirectory { get; set; }
 
     /// <summary>
+    /// Foundry pixels per grid square, used when no <see cref="UnderlyingMap"/> sets the scale.
+    /// </summary>
+    public int FoundryGridSize { get; set; } = Export.FoundryExportCanvas.DefaultGridSize;
+
+    /// <summary>
     /// Full-resolution Foundry background matched by source base name under the maps folder.
     /// Null when no matching image was found.
     /// </summary>

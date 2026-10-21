@@ -25,6 +25,12 @@ internal static class FoundrySceneBuilder
             grid["size"] = gridSize;
         }
 
+        // Open at 100 % zoom (Foundry otherwise defaults to 50 / grid size); x/y stay null so it centers.
+        if (scene["initial"] is JsonObject initial)
+        {
+            initial["scale"] = 1;
+        }
+
         var backgroundSrc = FoundryPaths.BuildBackgroundSrc(
             map.FoundryMapsDirectory,
             map.SourceFileName,

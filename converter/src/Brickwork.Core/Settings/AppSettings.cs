@@ -1,3 +1,4 @@
+using Brickwork.Core.Export;
 using Brickwork.Core.Foundry;
 using Brickwork.Core.Geometry;
 using Brickwork.Core.Models;
@@ -13,6 +14,9 @@ public sealed class AppSettings
 
     /// <summary>Absolute Foundry maps folder; used as the base for Foundry background.src paths.</summary>
     public string FoundryMapsPath { get; set; } = FoundryPaths.TryGetPreferredMapsDirectory() ?? string.Empty;
+
+    /// <summary>Foundry pixels per grid square when no map image is found in the maps folder.</summary>
+    public int FoundryGridSize { get; set; } = FoundryExportCanvas.DefaultGridSize;
 
     /// <summary>Import closed color (non-texture) paths as regions.</summary>
     public bool DetectRegionsFromColorPaths { get; set; } = true;

@@ -1,3 +1,4 @@
+using Brickwork.Core.Export;
 using Brickwork.Core.Models;
 using Brickwork.Core.Settings;
 
@@ -32,6 +33,7 @@ public sealed class AppPreferences
             if (args.PropertyName is nameof(EditorSession.WallSimplificationTolerance)
                 or nameof(EditorSession.ShowDebugPanel)
                 or nameof(EditorSession.FoundryMapsPath)
+                or nameof(EditorSession.FoundryGridSize)
                 or nameof(EditorSession.DetectRegionsFromColorPaths)
                 or nameof(EditorSession.DetectRegionsFromNamedContainers)
                 or nameof(EditorSession.DetectRegionsFromPathNames)
@@ -74,6 +76,9 @@ public sealed class AppPreferences
             _session.WallSimplificationTolerance = settings.WallSimplificationTolerance;
             _session.ShowDebugPanel = settings.ShowDebugPanel;
             _session.FoundryMapsPath = settings.FoundryMapsPath ?? string.Empty;
+            _session.FoundryGridSize = settings.FoundryGridSize > 0
+                ? settings.FoundryGridSize
+                : FoundryExportCanvas.DefaultGridSize;
             _session.DetectRegionsFromColorPaths = settings.DetectRegionsFromColorPaths;
             _session.DetectRegionsFromNamedContainers = settings.DetectRegionsFromNamedContainers;
             _session.DetectRegionsFromPathNames = settings.DetectRegionsFromPathNames;
@@ -104,6 +109,7 @@ public sealed class AppPreferences
             WallSimplificationTolerance = _session.WallSimplificationTolerance,
             ShowDebugPanel = _session.ShowDebugPanel,
             FoundryMapsPath = _session.FoundryMapsPath,
+            FoundryGridSize = _session.FoundryGridSize,
             DetectRegionsFromColorPaths = _session.DetectRegionsFromColorPaths,
             DetectRegionsFromNamedContainers = _session.DetectRegionsFromNamedContainers,
             DetectRegionsFromPathNames = _session.DetectRegionsFromPathNames,

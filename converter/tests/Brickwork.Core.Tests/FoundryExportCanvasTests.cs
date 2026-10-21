@@ -32,9 +32,22 @@ public class FoundryExportCanvasTests
     }
 
     [Fact]
-    public void FromMap_DisconnectedWithGrid_UsesColumnsTimes100()
+    public void FromMap_DisconnectedWithGrid_DefaultsTo150PixelsPerSquare()
     {
         var map = CreateMap(columns: 40, rows: 30, previewWidth: 2048, previewHeight: 1536);
+
+        var canvas = FoundryExportCanvas.FromMap(map);
+
+        Assert.Equal(6000, canvas.Width);
+        Assert.Equal(4500, canvas.Height);
+        Assert.Equal(150, canvas.GridSize);
+    }
+
+    [Fact]
+    public void FromMap_DisconnectedWithGrid_UsesConfiguredGridSize()
+    {
+        var map = CreateMap(columns: 40, rows: 30, previewWidth: 2048, previewHeight: 1536);
+        map.FoundryGridSize = 100;
 
         var canvas = FoundryExportCanvas.FromMap(map);
 

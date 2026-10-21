@@ -227,6 +227,7 @@ public partial class ImportToolViewModel : Tool
             _session.Map.FoundryMapsDirectory = string.IsNullOrWhiteSpace(_session.FoundryMapsPath)
                 ? null
                 : _session.FoundryMapsPath;
+            _session.Map.FoundryGridSize = _session.FoundryGridSize;
 
             await using var output = File.Create(outputPath);
             await _convertMapService

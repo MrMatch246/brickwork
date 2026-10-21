@@ -105,8 +105,9 @@ public class LightImportExportTests
         Assert.Equal(2, lights.GetArrayLength());
 
         var first = lights[0];
-        Assert.Equal(150, first.GetProperty("x").GetInt32());
-        Assert.Equal(200, first.GetProperty("y").GetInt32());
+        // 1.5 × 2 squares at the default 150 px per square.
+        Assert.Equal(225, first.GetProperty("x").GetInt32());
+        Assert.Equal(300, first.GetProperty("y").GetInt32());
         var config = first.GetProperty("config");
         Assert.Equal(LightSource.DefaultBrightRadius * 5, config.GetProperty("bright").GetDouble());
         Assert.Equal(LightSource.DefaultDimRadius * 5, config.GetProperty("dim").GetDouble());

@@ -46,6 +46,11 @@ public partial class SettingsWindowViewModel : ObservableObject
                 OnPropertyChanged(nameof(FoundryMapsPath));
             }
 
+            if (args.PropertyName is nameof(EditorSession.FoundryGridSize))
+            {
+                OnPropertyChanged(nameof(FoundryGridSize));
+            }
+
             if (args.PropertyName is nameof(EditorSession.DetectRegionsFromColorPaths))
             {
                 OnPropertyChanged(nameof(DetectRegionsFromColorPaths));
@@ -241,6 +246,12 @@ public partial class SettingsWindowViewModel : ObservableObject
     {
         get => _session.FoundryMapsPath;
         set => _session.FoundryMapsPath = value ?? string.Empty;
+    }
+
+    public int FoundryGridSize
+    {
+        get => _session.FoundryGridSize;
+        set => _session.FoundryGridSize = Math.Max(1, value);
     }
 
     public void SelectCategory(SettingsCategory category) => SelectedCategory = category;

@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Brickwork.App.Editing;
 using Brickwork.Core.Editing;
+using Brickwork.Core.Export;
 using Brickwork.Core.Geometry;
 using Brickwork.Core.Models;
 using Brickwork.Inkarnate;
@@ -70,6 +71,9 @@ public sealed partial class EditorSession : ObservableObject
 
     [ObservableProperty]
     private string _foundryMapsPath = string.Empty;
+
+    [ObservableProperty]
+    private int _foundryGridSize = FoundryExportCanvas.DefaultGridSize;
 
     [ObservableProperty]
     private bool _detectRegionsFromColorPaths = true;
