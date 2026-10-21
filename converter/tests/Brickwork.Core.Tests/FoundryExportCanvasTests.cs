@@ -91,6 +91,31 @@ public class FoundryExportCanvasTests
         Assert.Null(canvas.GridSize);
     }
 
+    [Fact]
+    public void FromMap_ExportGrid_OverridesImageAndScalesSquares()
+    {
+        var map = CreateMap(columns: 40, rows: 30, previewWidth: 2048, previewHeight: 1536);
+        map.UnderlyingMap = new UnderlyingMapInfo
+        {
+            FileName = "dungeon.webp",
+            AbsolutePath = @"C:\maps\dungeon.webp",
+            Width = 12000,
+            Height = 9000,
+        };
+        map.FoundryExportGrid = new FoundryExportGrid(120, 90, 150);
+
+        var canvas = FoundryExportCanvas.FromMap(map);
+
+        Assert.Equal(18000, canvas.Width);
+        Assert.Equal(13500, canvas.Height);
+        Assert.Equal(150, canvas.GridSize);
+        Assert.Equal(3, canvas.SquaresPerMapCell, precision: 9);
+
+        var corner = canvas.Transform.SceneToPreview(new MapPoint(map.Scene.Width, map.Scene.Height));
+        Assert.Equal(18000, corner.X, precision: 6);
+        Assert.Equal(13500, corner.Y, precision: 6);
+    }
+
     private static MapDocument CreateMap(
         int columns,
         int rows,

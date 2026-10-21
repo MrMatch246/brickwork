@@ -31,6 +31,12 @@ public sealed class MapDocument
     public int FoundryGridSize { get; set; } = Export.FoundryExportCanvas.DefaultGridSize;
 
     /// <summary>
+    /// Grid chosen in the export dialog; when set it decides the Foundry scene size and grid,
+    /// overriding <see cref="UnderlyingMap"/> and <see cref="FoundryGridSize"/>.
+    /// </summary>
+    public FoundryExportGrid? FoundryExportGrid { get; set; }
+
+    /// <summary>
     /// Full-resolution Foundry background matched by source base name under the maps folder.
     /// Null when no matching image was found.
     /// </summary>
@@ -83,6 +89,12 @@ public sealed class UnderlyingMapInfo
     public int Height { get; init; }
 
     public bool IsConnected => Width > 0 && Height > 0 && !string.IsNullOrWhiteSpace(FileName);
+}
+
+/// <summary>Foundry scene grid: <see cref="Columns"/> × <see cref="Rows"/> squares of <see cref="PixelsPerSquare"/> px.</summary>
+public sealed record FoundryExportGrid(int Columns, int Rows, int PixelsPerSquare)
+{
+    public bool IsValid => Columns > 0 && Rows > 0 && PixelsPerSquare > 0;
 }
 
 public sealed class GridInfo

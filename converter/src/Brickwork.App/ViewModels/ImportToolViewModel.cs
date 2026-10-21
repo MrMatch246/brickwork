@@ -8,6 +8,7 @@ using Brickwork.App.Foundry;
 using Brickwork.App.Views.Dialogs;
 using Brickwork.Composition;
 using Brickwork.Core.Editing;
+using Brickwork.Core.Models;
 using Brickwork.Core.Services;
 using Brickwork.Inkarnate;
 using IconPacks.Avalonia.FontAwesome6;
@@ -219,6 +220,24 @@ public partial class ImportToolViewModel : Tool
         }
 
         var (outputPath, formatId) = exportTarget.Value;
+
+        if (formatId == "foundry" && _session.Map.Grid is { Columns: > 0, Rows: > 0 } mapGrid &&
+            Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } owner })
+        {
+            // Start from the last export of this map, else the map grid with the configured pixels.
+            var initial = _session.Map.FoundryExportGrid is { IsValid: true } previous
+                ? previous
+                : new FoundryExportGrid(mapGrid.Columns, mapGrid.Rows, _session.FoundryGridSize);
+            var grid = await FoundryExportDialog.ShowAsync(owner, mapGrid, initial).ConfigureAwait(true);
+            if (grid is null)
+            {
+                StatusMessage = "Export cancelled.";
+                return;
+            }
+
+            _session.Map.FoundryExportGrid = grid;
+        }
+
         StatusMessage = "Converting...";
 
         try

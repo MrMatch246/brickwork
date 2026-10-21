@@ -229,7 +229,7 @@
                     </Grid>
                     <TextBlock Text="Pixels per grid square"
                                FontWeight="SemiBold" />
-                    <TextBlock Text="Foundry grid size used when no map image is found in the maps folder. With a matching image, the image's own pixels per square are used so it stays sharp."
+                    <TextBlock Text="Default for the Foundry export dialog, where the grid squares and pixels per square of the scene are chosen."
                                TextWrapping="Wrap"
                                Opacity="0.75" />
                     <NumericUpDown Minimum="50" Maximum="1000" Increment="10" FormatString="0"

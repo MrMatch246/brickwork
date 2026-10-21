@@ -94,6 +94,23 @@ public class LightImportExportTests
     }
 
     [Fact]
+    public async Task FoundryExport_ExportGrid_ScalesLightRadiiToFoundrySquares()
+    {
+        var map = await ImportAsync(new InkarnateImportOptions());
+        map.FoundryExportGrid = new FoundryExportGrid(map.Grid.Columns * 3, map.Grid.Rows * 3, 100);
+        await using var output = new MemoryStream();
+
+        await ServiceFactory.CreateConvertMapService().ConvertAsync(map, output, "foundry");
+
+        output.Position = 0;
+        using var document = await JsonDocument.ParseAsync(output);
+        var config = document.RootElement.GetProperty("lights")[0].GetProperty("config");
+        // Each map square is 3 Foundry squares of 5 ft.
+        Assert.Equal(LightSource.DefaultBrightRadius * 3 * 5, config.GetProperty("bright").GetDouble());
+        Assert.Equal(LightSource.DefaultDimRadius * 3 * 5, config.GetProperty("dim").GetDouble());
+    }
+
+    [Fact]
     public async Task FoundryExport_ColoredLight_WritesColor()
     {
         var map = await ImportAsync(new InkarnateImportOptions { LightColor = "#ffb15c" });
