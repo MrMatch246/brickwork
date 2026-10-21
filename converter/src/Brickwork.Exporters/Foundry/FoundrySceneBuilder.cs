@@ -107,7 +107,8 @@ internal static class FoundrySceneBuilder
                 ["angle"] = 360,
                 ["bright"] = light.BrightSquares * gridDistance,
                 ["dim"] = light.DimSquares * gridDistance,
-                ["color"] = light.Color,
+                // Foundry only skips colorization for a null color; black is our "no color".
+                ["color"] = LightColors.IsNone(light.Color) ? null : light.Color,
                 ["coloration"] = 1,
                 ["attenuation"] = 0.5,
                 ["luminosity"] = 0.5,

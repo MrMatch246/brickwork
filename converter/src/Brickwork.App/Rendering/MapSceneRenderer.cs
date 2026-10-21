@@ -154,9 +154,12 @@ public sealed class MapSceneRenderer : IMapSceneRenderer
             var center = transform.SceneToPreview(light.Position);
             var x = (float)center.X;
             var y = (float)center.Y;
-            var color = LightColors.TryParse(light.Color, out var red, out var green, out var blue)
-                ? new SKColor(red, green, blue)
-                : SKColors.Orange;
+            // Black means "no colorization"; show such lights as plain white light.
+            var color = LightColors.IsNone(light.Color)
+                ? SKColors.White
+                : LightColors.TryParse(light.Color, out var red, out var green, out var blue)
+                    ? new SKColor(red, green, blue)
+                    : SKColors.Orange;
 
             if (light.IsActive && pixelsPerSquare > 0 && (showRadii || emphasized))
             {

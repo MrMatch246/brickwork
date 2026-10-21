@@ -4,6 +4,12 @@ namespace Brickwork.Core.Models;
 
 public static class LightColors
 {
+    /// <summary>Black: the light is not colorized.</summary>
+    public const string None = "#000000";
+
+    /// <summary>True when <paramref name="color"/> is black, i.e. the light adds no color.</summary>
+    public static bool IsNone(string? color) => Normalize(color) == None;
+
     /// <summary>Returns <paramref name="color"/> as lowercase <c>#rrggbb</c>, or the default light color if invalid.</summary>
     public static string Normalize(string? color) =>
         TryParse(color, out var red, out var green, out var blue)

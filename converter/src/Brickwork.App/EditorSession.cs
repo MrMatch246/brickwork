@@ -103,6 +103,9 @@ public sealed partial class EditorSession : ObservableObject
     private double _lightDimRadius = LightSource.DefaultDimRadius;
 
     [ObservableProperty]
+    private string _lightColor = LightSource.DefaultColor;
+
+    [ObservableProperty]
     private bool _detectTreesFromStamps = true;
 
     [ObservableProperty]
@@ -198,6 +201,7 @@ public sealed partial class EditorSession : ObservableObject
             DetectLightAnimations = DetectLightAnimations,
             LightBrightRadius = LightBrightRadius,
             LightDimRadius = LightDimRadius,
+            LightColor = LightColor,
             DetectTreesFromStamps = DetectTreesFromStamps,
             TreeKeywords = TreeKeywords,
             TreeExcludeKeywords = TreeExcludeKeywords,

@@ -30,6 +30,9 @@ public sealed class InkarnateImportOptions
     /// <summary>Dim radius in grid squares for detected lights.</summary>
     public double LightDimRadius { get; set; } = LightSource.DefaultDimRadius;
 
+    /// <summary>Color (#rrggbb) for detected lights; black means no colorization.</summary>
+    public string LightColor { get; set; } = LightSource.DefaultColor;
+
     /// <summary>Add an X of two walls at the trunk of every stamp whose name matches the tree words.</summary>
     public bool DetectTreesFromStamps { get; set; } = true;
 

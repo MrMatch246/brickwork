@@ -45,6 +45,9 @@ public sealed class AppSettings
     /// <summary>Default dim radius, in grid squares, for detected lights.</summary>
     public double LightDimRadius { get; set; } = LightSource.DefaultDimRadius;
 
+    /// <summary>Default color (#rrggbb) for detected lights; black means no colorization.</summary>
+    public string LightColor { get; set; } = LightSource.DefaultColor;
+
     /// <summary>Add an X of two walls at the trunk of every tree stamp.</summary>
     public bool DetectTreesFromStamps { get; set; } = true;
 

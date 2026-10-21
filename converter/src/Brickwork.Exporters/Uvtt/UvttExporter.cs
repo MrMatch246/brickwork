@@ -94,7 +94,10 @@ public sealed class UvttExporter : IMapExporter
                     Position = UvttCoordinateTransform.ToUvttPoint(
                         UvttCoordinateTransform.SceneToGrid(light.Position, origin, cellSize)),
                     Range = light.DimRadius,
-                    Color = "ff" + LightColors.Normalize(light.Color).TrimStart('#'),
+                    // UVTT has no "uncolored" light; black would be no light at all, so use white.
+                    Color = LightColors.IsNone(light.Color)
+                        ? "ffffffff"
+                        : "ff" + LightColors.Normalize(light.Color).TrimStart('#'),
                 })
                 .ToList(),
             Image = Convert.ToBase64String(map.PreviewImagePng!),

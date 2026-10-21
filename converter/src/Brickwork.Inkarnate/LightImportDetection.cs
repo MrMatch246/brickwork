@@ -47,6 +47,7 @@ internal static class LightImportDetection
                            (stamp.LayerId is null || !hiddenLayers.Contains(stamp.LayerId)),
                 BrightRadius = options.LightBrightRadius,
                 DimRadius = options.LightDimRadius,
+                Color = LightColors.Normalize(options.LightColor),
                 Animation = options.DetectLightAnimations
                     ? DetectAnimation(name, sourceName)
                     : LightAnimation.None,

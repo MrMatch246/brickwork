@@ -7,7 +7,8 @@ public sealed class LightSource
 
     public const double DefaultDimRadius = 8;
 
-    public const string DefaultColor = "#ffb15c";
+    /// <summary>Black means "no colorization" (Foundry light color unset).</summary>
+    public const string DefaultColor = LightColors.None;
 
     public int EntityId { get; init; }
 

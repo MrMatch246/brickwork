@@ -78,6 +78,7 @@ public partial class SettingsWindowViewModel : ObservableObject
                 or nameof(EditorSession.LightExcludeKeywords)
                 or nameof(EditorSession.LightBrightRadius)
                 or nameof(EditorSession.LightDimRadius)
+                or nameof(EditorSession.LightColor)
                 or nameof(EditorSession.DetectTreesFromStamps)
                 or nameof(EditorSession.TreeKeywords)
                 or nameof(EditorSession.TreeExcludeKeywords)
@@ -168,6 +169,19 @@ public partial class SettingsWindowViewModel : ObservableObject
     {
         get => _session.LightDimRadius;
         set => _session.LightDimRadius = value;
+    }
+
+    /// <summary>Default light color as #rrggbb; invalid input is ignored.</summary>
+    public string LightColor
+    {
+        get => _session.LightColor;
+        set
+        {
+            if (LightColors.TryParse(value, out _, out _, out _))
+            {
+                _session.LightColor = LightColors.Normalize(value);
+            }
+        }
     }
 
     public bool DetectTreesFromStamps

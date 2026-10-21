@@ -83,12 +83,28 @@ public class LightImportExportTests
             LightExcludeKeywords = string.Empty,
             LightBrightRadius = 1,
             LightDimRadius = 2,
+            LightColor = "#FFB15C",
         });
 
         var light = Assert.Single(map.Lights);
         Assert.Equal(12, light.EntityId);
         Assert.Equal(1, light.BrightRadius);
         Assert.Equal(2, light.DimRadius);
+        Assert.Equal("#ffb15c", light.Color);
+    }
+
+    [Fact]
+    public async Task FoundryExport_ColoredLight_WritesColor()
+    {
+        var map = await ImportAsync(new InkarnateImportOptions { LightColor = "#ffb15c" });
+        await using var output = new MemoryStream();
+
+        await ServiceFactory.CreateConvertMapService().ConvertAsync(map, output, "foundry");
+
+        output.Position = 0;
+        using var document = await JsonDocument.ParseAsync(output);
+        var config = document.RootElement.GetProperty("lights")[0].GetProperty("config");
+        Assert.Equal("#ffb15c", config.GetProperty("color").GetString());
     }
 
     [Fact]
@@ -111,7 +127,8 @@ public class LightImportExportTests
         var config = first.GetProperty("config");
         Assert.Equal(LightSource.DefaultBrightRadius * 5, config.GetProperty("bright").GetDouble());
         Assert.Equal(LightSource.DefaultDimRadius * 5, config.GetProperty("dim").GetDouble());
-        Assert.Equal(LightSource.DefaultColor, config.GetProperty("color").GetString());
+        // Default black means no colorization, which Foundry expects as a null color.
+        Assert.Equal(JsonValueKind.Null, config.GetProperty("color").ValueKind);
         var animation = config.GetProperty("animation");
         Assert.Equal("flame", animation.GetProperty("type").GetString());
         Assert.Equal(LightAnimations.DefaultSpeed, animation.GetProperty("speed").GetInt32());
@@ -132,7 +149,8 @@ public class LightImportExportTests
         Assert.Equal(2, lights.GetArrayLength());
         Assert.Equal(1.5, lights[0].GetProperty("position").GetProperty("x").GetDouble(), precision: 6);
         Assert.Equal(LightSource.DefaultDimRadius, lights[0].GetProperty("range").GetDouble());
-        Assert.Equal("ffffb15c", lights[0].GetProperty("color").GetString());
+        // Uncolored (black) lights become white in UVTT.
+        Assert.Equal("ffffffff", lights[0].GetProperty("color").GetString());
     }
 
     [Fact]
